@@ -1,0 +1,63 @@
+name: Publish website
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unpack uploaded files (only when a bundle was uploaded)
+        run: |
+          if [ -f bundle/web.txz.b64 ]; then
+            tr -d ' \r\n' < bundle/web.txz.b64 | base64 -d | tar -xJ
+            git rm -q bundle/web.txz.b64
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -q -m "Apply uploaded website files"
+            git push
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build the site
+        run: |
+          mkdir -p _site/vendor
+          cp index.html shim.js firebase-config.js _site/
+          cd "$RUNNER_TEMP"
+          npm pack firebase@10.14.1 --silent
+          tar -xzf firebase-10.14.1.tgz
+          cp package/firebase-app-compat.js package/firebase-auth-compat.js package/firebase-firestore-compat.js "$GITHUB_WORKSPACE/_site/vendor/"
+          rm -rf package
+          npm pack xlsx@0.18.5 --silent
+          tar -xzf xlsx-0.18.5.tgz
+          cp package/dist/xlsx.full.min.js "$GITHUB_WORKSPACE/_site/vendor/"
+          ls -la "$GITHUB_WORKSPACE/_site" "$GITHUB_WORKSPACE/_site/vendor"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
