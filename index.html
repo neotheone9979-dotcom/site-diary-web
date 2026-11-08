@@ -189,6 +189,24 @@ dialog.sheet::backdrop{background:rgba(8,14,24,.5)}
 .state{padding:28px 18px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
 .state p{margin:0;color:var(--muted);max-width:42ch}
 @media (prefers-reduced-motion:no-preference){.btn,.tile,.seg button,.mark button{transition:background .12s,border-color .12s,color .12s}.bar>i{transition:width .4s}}
+
+.ico{stroke:var(--navy);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
+.ico .s{fill:var(--chip)}.ico .a{fill:var(--flame-soft);stroke:var(--flame)}.ico .r{fill:var(--flame);stroke:var(--flame)}.ico .w{fill:var(--card)}
+.thumb{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips .chip{border:0;cursor:pointer;font-size:13px;padding:6px 11px}
+.chips .chip.on{background:var(--navy);color:var(--card)}
+.catl{display:flex;flex-direction:column;gap:8px}
+.ci{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.ci .cm{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.ci .t{font-weight:600;font-size:14px}
+.cls{display:flex;flex-direction:column;gap:4px;width:100%}
+.cl{display:flex;align-items:center;gap:8px;width:100%}
+.cz{flex:0 0 auto;min-width:76px;font:500 13px var(--mono);color:var(--muted)}
+.cq{width:88px;flex:0 0 auto;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font:500 14px var(--mono);text-align:right;color:var(--ink)}
+.catf{position:sticky;bottom:0;background:var(--card);padding:10px 0 2px;box-shadow:0 -8px 12px -8px rgba(0,0,0,.15)}
+.seg4 button{font-size:13px;padding:7px 3px;line-height:1.2}
 </style>
 
 <header class="hdr gut">
@@ -229,7 +247,7 @@ var TSTAT={available:['Available','good'],issued:['Issued','flame'],repair:['Und
 var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 var S={db:null,user:null,me:null,dl:null,mode:'connecting',projects:[],pid:null,date:today(),tab:'home',
-  workers:[],att:{},plans:{},dpr:{},tools:[],mats:[],mtx:[],tlog:[],loaded:{},names:{},planKind:'day',store:'mat',matCat:'all',toolF:'all',q:'',unsub:[]};
+  workers:[],adv:[],attTab:'mark',att:{},plans:{},dpr:{},tools:[],mats:[],mtx:[],tlog:[],loaded:{},names:{},planKind:'day',store:'mat',matCat:'all',toolF:'all',q:'',unsub:[]};
 try{var sv=JSON.parse(localStorage.getItem('sd-ui')||'{}');if(sv.pid)S.pid=sv.pid;if(sv.tab)S.tab=sv.tab;if(sv.planKind)S.planKind=sv.planKind;if(sv.store)S.store=sv.store;}catch(e){}
 function saveUi(){try{localStorage.setItem('sd-ui',JSON.stringify({pid:S.pid,tab:S.tab,planKind:S.planKind,store:S.store}));}catch(e){}}
 
@@ -324,7 +342,7 @@ function watchProject(){
   if(watching===S.pid)return;
   S.unsub.forEach(function(u){try{u();}catch(e){}});S.unsub=[];
   watching=S.pid;
-  S.workers=[];S.att={};S.plans={};S.dpr={};S.tools=[];S.mats=[];S.mtx=[];S.tlog=[];S.loaded={};
+  S.workers=[];S.adv=[];S.att={};S.plans={};S.dpr={};S.tools=[];S.mats=[];S.mtx=[];S.tlog=[];S.loaded={};
   if(!S.pid)return;
   function sub(name,q,fn){
     S.unsub.push(q.onSnapshot(function(snap){
@@ -334,9 +352,10 @@ function watchProject(){
   }
   function byId(rows){var m={};rows.forEach(function(r){m[r.id]=r;});return m;}
   sub('workers',col('workers').limit(500),function(r){S.workers=r;});
-  sub('att',col('att').orderBy('date','desc').limit(70),function(r){S.att=byId(r);});
+  sub('adv',col('adv').orderBy('date','desc').limit(1000),function(r){S.adv=r;});
+  sub('att',col('att').orderBy('date','desc').limit(100),function(r){S.att=byId(r);});
   sub('plans',col('plans').orderBy('key','desc').limit(80),function(r){S.plans=byId(r);});
-  sub('dpr',col('dpr').orderBy('date','desc').limit(60),function(r){S.dpr=byId(r);});
+  sub('dpr',col('dpr').orderBy('date','desc').limit(400),function(r){S.dpr=byId(r);});
   sub('tools',col('tools').limit(1000),function(r){S.tools=r;});
   sub('mats',col('mats').limit(1000),function(r){S.mats=r;});
   sub('mtx',col('mtx').orderBy('at','desc').limit(300),function(r){S.mtx=r;});
@@ -445,6 +464,7 @@ function vHome(){
   });
   h+='</section>';
 
+  h+=workTotalsCard();
   h+='<section class="card"><div class="ch"><h2>Project details</h2><button class="btn sm" type="button" data-act="editProject">Edit</button></div><dl class="kv">'+
     kv('Client',p.client)+kv('Site',p.site)+kv('PO / WO',p.po)+kv('Order value',p.value?'₹ '+fq(p.value):'')+kv('Site in charge',p.incharge)+kv('Start',fd(p.start))+kv('Finish by',fd(p.end))+
     '</dl><div class="row"><button class="btn sm" type="button" data-act="newProject">New project</button><button class="btn sm" type="button" data-act="bulk">Bulk upload (Excel)</button>'+
@@ -456,7 +476,8 @@ function tile(tab,l,v,s){return '<button type="button" class="tile" data-act="go
 function kv(k,v){return v?'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>':'';}
 
 /* ----- Attendance ----- */
-function vAtt(){
+function vAtt(){var k=S.attTab||'mark';return attSeg()+(k==='pay'?vPay():k==='adv'?vAdv():k==='sal'?vSal():vMark());}
+function vMark(){
   var a=S.att[S.date]||{marks:{},ot:{}},ws=activeWorkers(),c=attCount(S.date)||{P:0,H:0,A:0,ot:0};
   var un=ws.filter(function(w){return !(a.marks||{})[w.id];}).length;
   var h='<section class="card"><div class="ch"><div><div class="eyebrow">Attendance</div><h3>'+fd(S.date,true)+' '+pd(S.date).getFullYear()+'</h3></div>'+
@@ -503,7 +524,7 @@ function vPlan(){
       '<button type="button" class="x" data-act="delTask" data-i="'+i+'" aria-label="Remove task">×</button></div>';
   });
   h+='<form id="taskForm" class="card" style="border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none">'+
-    '<label class="f"><span>New task</span><input id="tf-text" required placeholder="Lay 25 mm GI pipe, basement east"></label>'+
+    '<label class="f"><span>New task</span><input id="tf-text" list="actList" required placeholder="Erection of pipes, 25 NB, basement east"></label><datalist id="actList">'+ACTS.filter(function(a){return a[0]!=='other';}).map(function(a){return '<option value="'+esc(a[1])+'">';}).join('')+'</datalist>'+
     '<div class="g3"><label class="f"><span>Stage</span><select id="tf-stage"><option value="">None</option>'+opts((p.stages||[]).map(function(s){return [s.id,s.name];}),'')+'</select></label>'+
     '<label class="f"><span>Target qty</span><input id="tf-qty" type="number" min="0" step="any" inputmode="decimal"></label>'+
     '<label class="f"><span>Unit</span><select id="tf-unit">'+opts(UNITS,'Mtr')+'</select></label></div>'+
@@ -533,6 +554,7 @@ function vDpr(){
   }else{
     h+=dprBody(p,r,S.date)+'<div class="row"><button class="btn" type="button" data-act="dprEdit">Edit</button><button class="btn" type="button" data-act="dprCopy">'+(window.AndroidBridge?'Send on WhatsApp':'Copy for WhatsApp')+'</button></div></section>';
   }
+  h+=workTotalsCard();
   var ks=Object.keys(S.dpr).sort().reverse();
   h+='<section class="card flush"><div class="ch"><h2>Earlier reports</h2></div>';
   if(!ks.length)h+='<div class="empty">No reports yet.</div>';
@@ -551,7 +573,7 @@ function dprBody(p,r,date){
   h+='<div><h2 style="margin-bottom:6px">Work done</h2>';
   if(!(r.work||[]).length)h+='<div class="muted small">No work lines.</div>';
   else h+='<div class="tw"><table class="tb"><thead><tr><th>Activity</th><th class="n">Qty</th><th>Stage</th><th class="n">Stage %</th></tr></thead><tbody>'+
-    r.work.map(function(w){return '<tr><td style="white-space:normal">'+esc(w.text)+'</td><td class="n">'+(w.qty!==''&&w.qty!=null?fq(w.qty)+' '+esc(w.unit||''):'')+'</td><td>'+esc(stageName(p,w.stage))+'</td><td class="n">'+(w.pct!==''&&w.pct!=null?n(w.pct)+'%':'')+'</td></tr>';}).join('')+'</tbody></table></div>';
+    r.work.map(function(w){return '<tr><td style="white-space:normal">'+esc(actLabel(w))+'</td><td class="n">'+(w.qty!==''&&w.qty!=null?fq(w.qty)+' '+esc(w.unit||''):'')+'</td><td>'+esc(stageName(p,w.stage))+'</td><td class="n">'+(w.pct!==''&&w.pct!=null?n(w.pct)+'%':'')+'</td></tr>';}).join('')+'</tbody></table></div>';
   h+='</div>';
   if(u.length)h+='<div><h2 style="margin-bottom:6px">Material used (from stores)</h2><div class="small">'+u.map(function(x){return esc(x.name)+' <span class="num">'+fq(x.qty)+' '+esc(x.unit)+'</span>';}).join(' · ')+'</div></div>';
   h+='<dl class="kv">'+kv('Hindrances',r.hindrance)+kv('Safety',r.safety)+kv('Plan for tomorrow',r.tomorrow)+'</dl>';
@@ -563,7 +585,7 @@ function dprText(p,r,date){
     'Manpower: '+(r.manpower!=null?r.manpower:'–')+(c?' (P '+c.P+', H '+c.H+(c.ot?', OT '+c.ot+' h':'')+')':'')];
   if(r.subLabour)L.push('Subcontractor labour: '+r.subLabour);
   L.push('','*Work done*');
-  (r.work||[]).forEach(function(w,i){L.push((i+1)+'. '+w.text+(w.qty!==''&&w.qty!=null?' – '+fq(w.qty)+' '+(w.unit||''):'')+(w.stage?' ['+stageName(p,w.stage)+(w.pct!==''&&w.pct!=null?' '+n(w.pct)+'%':'')+']':''));});
+  (r.work||[]).forEach(function(w,i){L.push((i+1)+'. '+actLabel(w)+(w.qty!==''&&w.qty!=null?' – '+fq(w.qty)+' '+(w.unit||''):'')+(w.stage?' ['+stageName(p,w.stage)+(w.pct!==''&&w.pct!=null?' '+n(w.pct)+'%':'')+']':''));});
   var u=usedOn(date);if(u.length){L.push('','*Material used*');u.forEach(function(x){L.push('- '+x.name+': '+fq(x.qty)+' '+x.unit);});}
   if(r.machinery)L.push('','*Machinery:* '+r.machinery);
   if(r.hindrance)L.push('*Hindrances:* '+r.hindrance);
@@ -578,12 +600,12 @@ function vStore(){
   var k=S.store,h='<div class="seg" role="group" aria-label="Stores"><button type="button" data-act="sk" data-v="mat" aria-pressed="'+(k==='mat')+'">Materials</button><button type="button" data-act="sk" data-v="tool" aria-pressed="'+(k==='tool')+'">Tools and machines</button></div>';
   if(k==='mat'){
     var low=S.mats.filter(function(m){return n(m.min)>0&&n(m.stock)<=n(m.min);}).length;
-    h+='<section class="card"><div class="row"><span class="chip">'+S.mats.length+' items</span>'+(low?'<span class="chip bad">'+low+' low</span>':'')+'<span class="sp"></span><button class="btn sm pri" type="button" data-act="addMat">Add material</button></div>'+
+    h+='<section class="card"><div class="row"><span class="chip">'+S.mats.length+' items</span>'+(low?'<span class="chip bad">'+low+' low</span>':'')+'<span class="sp"></span><button class="btn sm pri" type="button" data-act="catMat">Pick from catalogue</button><button class="btn sm" type="button" data-act="addMat">Add other</button></div>'+
       '<div class="seg" role="group" aria-label="Category">'+[['all','All'],['core','Core'],['cons','Consumables'],['low','Low']].map(function(o){return '<button type="button" data-act="mc" data-v="'+o[0]+'" aria-pressed="'+(S.matCat===o[0])+'">'+o[1]+'</button>';}).join('')+'</div>'+
       '<input class="in" type="search" id="storeQ" placeholder="Search material" value="'+esc(S.q)+'" aria-label="Search material"></section>';
   }else{
     var iss=S.tools.filter(function(x){return x.status==='issued';}).length,rp=S.tools.filter(function(x){return x.status==='repair';}).length;
-    h+='<section class="card"><div class="row"><span class="chip">'+S.tools.length+' items</span>'+(iss?'<span class="chip flame">'+iss+' issued</span>':'')+(rp?'<span class="chip warn">'+rp+' in repair</span>':'')+'<span class="sp"></span><button class="btn sm pri" type="button" data-act="addTool">Add tool or machine</button></div>'+
+    h+='<section class="card"><div class="row"><span class="chip">'+S.tools.length+' items</span>'+(iss?'<span class="chip flame">'+iss+' issued</span>':'')+(rp?'<span class="chip warn">'+rp+' in repair</span>':'')+'<span class="sp"></span><button class="btn sm pri" type="button" data-act="catTool">Pick from catalogue</button><button class="btn sm" type="button" data-act="addTool">Add other</button></div>'+
       '<div class="seg" role="group" aria-label="Status">'+[['all','All'],['available','Available'],['issued','Issued'],['repair','Repair'],['hired','Hired']].map(function(o){return '<button type="button" data-act="tf" data-v="'+o[0]+'" aria-pressed="'+(S.toolF===o[0])+'">'+o[1]+'</button>';}).join('')+'</div>'+
       '<input class="in" type="search" id="storeQ" placeholder="Search tools and machinery" value="'+esc(S.q)+'" aria-label="Search tools"></section>';
   }
@@ -602,11 +624,11 @@ function drawStoreList(){
       return !q||(m.name||'').toLowerCase().indexOf(q)>=0;
     }).sort(function(a,b){return (a.name||'').localeCompare(b.name||'');});
     if(!S.loaded.mats)h='<div class="empty">Loading stock…</div>';
-    else if(!S.mats.length)h='<div class="empty">Add the core material and consumables kept at this site. Record each receipt and issue to keep the stock right.</div>';
+    else if(!S.mats.length)h='<div class="empty">Tap Pick from catalogue, enter quantities for what is on site and leave the rest blank. Then record each receipt and issue to keep the stock right.</div>';
     else if(!rows.length)h='<div class="empty">Nothing matches.</div>';
     rows.forEach(function(m){
       var lowF=n(m.min)>0&&n(m.stock)<=n(m.min);
-      h+='<button type="button" class="li" data-act="openMat" data-id="'+m.id+'"><div class="main"><div class="t">'+esc(m.name)+'</div><div class="d">'+(m.cat==='core'?'Core material':'Consumable')+(n(m.min)?' · min '+fq(m.min)+' '+esc(m.unit||''):'')+'</div></div>'+
+      h+='<button type="button" class="li" data-act="openMat" data-id="'+m.id+'">'+thumb(m)+'<div class="main"><div class="t">'+esc(m.name)+'</div><div class="d">'+(m.cat==='core'?'Core material':'Consumable')+(n(m.min)?' · min '+fq(m.min)+' '+esc(m.unit||''):'')+'</div></div>'+
         '<div class="r"><div class="num" style="font-weight:600'+(lowF?';color:var(--bad)':'')+'">'+fq(m.stock)+'</div><div class="small muted">'+esc(m.unit||'')+'</div></div></button>';
     });
   }else{
@@ -616,11 +638,11 @@ function drawStoreList(){
       return !q||((x.name||'')+' '+(x.code||'')+' '+(x.holder||'')).toLowerCase().indexOf(q)>=0;
     }).sort(function(a,b){return (a.kind||'').localeCompare(b.kind||'')||(a.name||'').localeCompare(b.name||'');});
     if(!S.loaded.tools)h='<div class="empty">Loading…</div>';
-    else if(!S.tools.length)h='<div class="empty">Add the tools and machines on this site. Issue them to people, send them for repair and see where each one is.</div>';
+    else if(!S.tools.length)h='<div class="empty">Tap Pick from catalogue and enter how many of each tool or machine is on site. Then issue them, send them for repair and see where each one is.</div>';
     else if(!tr.length)h='<div class="empty">Nothing matches.</div>';
     tr.forEach(function(x){
       var s=TSTAT[x.status||'available']||TSTAT.available;
-      h+='<button type="button" class="li" data-act="openTool" data-id="'+x.id+'"><div class="main"><div class="t">'+esc(x.name)+(n(x.qty)>1?' <span class="num muted">× '+fq(x.qty)+'</span>':'')+'</div><div class="d">'+esc([x.kind==='machine'?'Machine':'Tool',x.code,x.own==='hired'?'Hired'+(x.vendor?' from '+x.vendor:''):'',x.status==='issued'&&x.holder?'with '+x.holder:''].filter(Boolean).join(' · '))+'</div></div>'+
+      h+='<button type="button" class="li" data-act="openTool" data-id="'+x.id+'">'+thumb(x)+'<div class="main"><div class="t">'+esc(x.name)+(n(x.qty)>1?' <span class="num muted">× '+fq(x.qty)+'</span>':'')+'</div><div class="d">'+esc([x.kind==='machine'?'Machine':'Tool',x.code,x.own==='hired'?'Hired'+(x.vendor?' from '+x.vendor:''):'',x.status==='issued'&&x.holder?'with '+x.holder:''].filter(Boolean).join(' · '))+'</div></div>'+
         '<span class="chip '+s[1]+'">'+s[0]+'</span></button>';
     });
   }
@@ -707,15 +729,15 @@ function workerSheet(w){
     '<label class="f"><span>Name</span><input id="wf-name" required value="'+esc(w.name)+'"></label>'+
     '<div class="g2"><label class="f"><span>Trade</span><input id="wf-trade" list="trades" value="'+esc(w.trade)+'"></label><label class="f"><span>Contractor / agency</span><input id="wf-con" value="'+esc(w.contractor)+'" placeholder="Own staff"></label></div>'+
     '<datalist id="trades">'+['Site engineer','Supervisor','Fitter','Plumber','Welder','Electrician','Helper','Rigger','Mason','Carpenter','Operator','Safety officer','Storekeeper'].map(function(t){return '<option value="'+t+'">';}).join('')+'</datalist>'+
-    '<div class="g2"><label class="f"><span>Phone</span><input id="wf-ph" type="tel" value="'+esc(w.phone)+'"></label><label class="f"><span>Daily wage (₹)</span><input id="wf-rate" type="number" min="0" step="any" value="'+esc(w.rate)+'"></label></div>'+
+    '<label class="f"><span>Phone</span><input id="wf-ph" type="tel" value="'+esc(w.phone)+'"></label>'+
     '<button class="btn pri" type="submit">'+(isNew?'Add worker':'Save')+'</button>'+
     (isNew?'<label class="f"><span>Or add several at once, one per line as Name, Trade</span><textarea id="wf-bulk" rows="4" placeholder="Ramesh Kumar, Fitter&#10;Sunil, Helper"></textarea></label><button class="btn" type="button" id="wf-addBulk">Add these workers</button>':
-      '<button class="btn danger" type="button" id="wf-off">Remove from site</button><div class="small muted">Removed workers stay in past attendance.</div>')+'</form>',
+      '<button class="btn" type="button" id="wf-pay">Salary, PF, ESIC and CTC</button><button class="btn danger" type="button" id="wf-off">Remove from site</button><div class="small muted">Removed workers stay in past attendance.</div>')+'</form>',
   function(b){
     $('#wf',b).addEventListener('submit',function(e){
       e.preventDefault();
-      var d={name:val('wf-name'),trade:val('wf-trade'),contractor:val('wf-con'),phone:val('wf-ph'),rate:numv('wf-rate'),active:true};
-      put('workers',w.id||uid(),Object.assign({},w,d)).then(function(){closeSheet();toast(isNew?'Worker added':'Saved');},function(){});
+      var d={name:val('wf-name'),trade:val('wf-trade'),contractor:val('wf-con'),phone:val('wf-ph'),active:true};
+      put('workers',w.id||uid(),Object.assign({},w,d)).then(function(){closeSheet();toast(isNew?'Worker added. Enter the salary under Salary & CTC.':'Saved');},function(){});
     });
     var bk=$('#wf-addBulk',b);
     if(bk)bk.addEventListener('click',function(){
@@ -724,6 +746,7 @@ function workerSheet(w){
       Promise.all(rows.map(function(l){var p=l.split(',');return col('workers').doc(uid()).set({name:p[0].trim(),trade:(p[1]||'').trim(),contractor:(p[2]||'').trim(),active:true});}))
         .then(function(){closeSheet();toast(rows.length+' workers added');},fail);
     });
+    var wp=$('#wf-pay',b);if(wp)wp.onclick=function(){paySheet(w);};
     var off=$('#wf-off',b);
     if(off)off.addEventListener('click',function(){confirmBtn(off,'Tap again to remove',function(){col('workers').doc(w.id).update({active:false}).then(function(){closeSheet();toast('Removed from site');},fail);});});
   });
@@ -744,15 +767,17 @@ function dprSheet(){
   var p=proj(),r=S.dpr[S.date],c=attCount(S.date),st=p.stages||[];
   var d=r?JSON.parse(JSON.stringify(r)):{weather:'Clear',manpower:c?c.P+c.H:'',subLabour:'',machinery:'',hindrance:'',safety:'',tomorrow:'',work:[]};
   if(!r){
-    planOf('day',S.date).items.filter(function(i){return i.done;}).forEach(function(i){var s=st.filter(function(x){return x.id===i.stage;})[0];d.work.push({text:i.text,qty:i.qty||'',unit:i.unit||'Mtr',stage:i.stage||'',pct:s?n(s.pct):''});});
+    planOf('day',S.date).items.filter(function(i){return i.done;}).forEach(function(i){var s=st.filter(function(x){return x.id===i.stage;})[0];d.work.push({act:guessAct(i.text),text:i.text,qty:i.qty||'',unit:i.unit||'Mtr',stage:i.stage||'',pct:s?n(s.pct):''});});
     var used=S.tools.filter(function(x){return x.kind==='machine'&&x.status!=='returned'&&x.status!=='lost';});
     if(used.length)d.machinery=used.map(function(x){return x.name;}).join(', ');
     var tm=planOf('day',addDays(S.date,1)).items;if(tm.length)d.tomorrow=tm.map(function(i){return '- '+i.text;}).join('\n');
   }
   if(!d.work.length)d.work.push({text:'',qty:'',unit:'Mtr',stage:'',pct:''});
   function lines(){
-    return d.work.map(function(w,i){var s=st.filter(function(x){return x.id===w.stage;})[0];return '<div class="wl"><div class="row"><input class="in" style="flex:1 1 200px" id="wk-t-'+i+'" data-i="'+i+'" data-k="text" placeholder="Activity done" value="'+esc(w.text)+'" aria-label="Activity"><button type="button" class="x" data-wdel="'+i+'" aria-label="Remove line">×</button></div>'+
-      '<div class="g2"><label class="f"><span>Qty</span><input id="wk-q-'+i+'" type="number" min="0" step="any" inputmode="decimal" data-i="'+i+'" data-k="qty" value="'+esc(w.qty)+'"></label><label class="f"><span>Unit</span><select id="wk-u-'+i+'" data-i="'+i+'" data-k="unit">'+opts(UNITS,w.unit||'Mtr')+'</select></label></div>'+
+    return d.work.map(function(w,i){var s=st.filter(function(x){return x.id===w.stage;})[0],A=ACTMAP[w.act]||null,sz=A&&A.sz;return '<div class="wl"><div class="row"><select class="in" style="flex:1 1 200px" id="wk-a-'+i+'" data-i="'+i+'" data-k="act" aria-label="Activity"><option value="">Choose activity</option>'+opts(ACTS.map(function(a){return [a[0],a[1]+(a[2]?' ('+a[2]+')':'')];}),w.act||'')+'</select><button type="button" class="x" data-wdel="'+i+'" aria-label="Remove line">×</button></div>'+
+      '<input class="in" id="wk-t-'+i+'" data-i="'+i+'" data-k="text" placeholder="'+(A&&w.act!=='other'?'Location or details (optional), e.g. basement east':'What was done')+'" value="'+esc(w.text)+'" aria-label="Details">'+
+      '<div class="'+(sz?'g3':'g2')+'">'+(sz?'<label class="f"><span>Pipe size</span><select id="wk-z-'+i+'" data-i="'+i+'" data-k="size"><option value="">Mixed</option>'+opts(NB.concat(['200 NB','250 NB','300 NB']),w.size||'')+'</select></label>':'')+
+      '<label class="f"><span>Qty</span><input id="wk-q-'+i+'" type="number" min="0" step="any" inputmode="decimal" data-i="'+i+'" data-k="qty" value="'+esc(w.qty)+'"></label><label class="f"><span>Unit</span><select id="wk-u-'+i+'" data-i="'+i+'" data-k="unit">'+opts(UNITS,w.unit||'Mtr')+'</select></label></div>'+
       '<div class="g2"><label class="f"><span>Stage</span><select id="wk-s-'+i+'" data-i="'+i+'" data-k="stage"><option value="">None</option>'+opts(st.map(function(x){return [x.id,x.name];}),w.stage)+'</select></label>'+
       '<label class="f"><span>Stage % after today'+(s?' (now '+n(s.pct)+'%)':'')+'</span><input id="wk-p-'+i+'" type="number" min="0" max="100" step="any" inputmode="decimal" data-i="'+i+'" data-k="pct" value="'+esc(w.pct)+'"></label></div></div>';}).join('');
   }
@@ -771,7 +796,7 @@ function dprSheet(){
   function(b){
     var wl=$('#wlines',b);
     function sync(){$$('[data-i][data-k]',wl).forEach(function(el){var i=+el.getAttribute('data-i'),k=el.getAttribute('data-k');d.work[i][k]=(k==='qty'||k==='pct')?(el.value===''?'':Number(el.value)):el.value;});}
-    wl.addEventListener('change',function(e){if(e.target.getAttribute('data-k')==='stage'){sync();var i=+e.target.getAttribute('data-i'),s=st.filter(function(x){return x.id===d.work[i].stage;})[0];if(s&&d.work[i].pct==='')d.work[i].pct=n(s.pct);wl.innerHTML=lines();}});
+    wl.addEventListener('change',function(e){if(e.target.getAttribute('data-k')==='act'){sync();var ai=+e.target.getAttribute('data-i'),A=ACTMAP[d.work[ai].act];if(A&&A.u)d.work[ai].unit=A.u;if(!(A&&A.sz))d.work[ai].size='';wl.innerHTML=lines();var nx=$('#wk-q-'+ai);if(nx&&A&&A.k!=='other')nx.focus();else{nx=$('#wk-t-'+ai);if(nx)nx.focus();}return;}if(e.target.getAttribute('data-k')==='stage'){sync();var i=+e.target.getAttribute('data-i'),s=st.filter(function(x){return x.id===d.work[i].stage;})[0];if(s&&d.work[i].pct==='')d.work[i].pct=n(s.pct);wl.innerHTML=lines();}});
     wl.addEventListener('click',function(e){var t=e.target.getAttribute('data-wdel');if(t==null)return;sync();d.work.splice(+t,1);if(!d.work.length)d.work.push({text:'',qty:'',unit:'Mtr',stage:'',pct:''});wl.innerHTML=lines();});
     $('#wadd',b).addEventListener('click',function(){sync();var last=d.work[d.work.length-1]||{};d.work.push({text:'',qty:'',unit:last.unit||'Mtr',stage:last.stage||'',pct:''});wl.innerHTML=lines();var el=$('#wk-t-'+(d.work.length-1));if(el)el.focus();});
     var del=$('#df-del',b);
@@ -779,7 +804,7 @@ function dprSheet(){
     $('#df',b).addEventListener('submit',function(e){
       e.preventDefault();sync();
       var o={date:S.date,weather:val('df-w'),manpower:numv('df-m'),subLabour:val('df-sub'),machinery:val('df-mac'),hindrance:val('df-h'),safety:val('df-s'),tomorrow:val('df-t'),
-        work:d.work.filter(function(w){return String(w.text||'').trim();}).map(function(w){return {text:String(w.text).trim(),qty:w.qty,unit:w.unit,stage:w.stage,pct:w.pct===''?'':Math.max(0,Math.min(100,n(w.pct)))};})};
+        work:d.work.filter(function(w){return (w.act&&w.act!=='other')||String(w.text||'').trim();}).map(function(w){return {act:w.act||'',size:w.size||'',text:String(w.text||'').trim(),qty:w.qty,unit:w.unit,stage:w.stage,pct:w.pct===''?'':Math.max(0,Math.min(100,n(w.pct)))};})};
       stamp(o);
       var ns=JSON.parse(JSON.stringify(st)),changed=false;
       o.work.forEach(function(w){if(w.stage&&w.pct!==''){ns.forEach(function(s){if(s.id===w.stage&&n(s.pct)!==w.pct){s.pct=w.pct;s.updated=S.date;changed=true;}});}});
@@ -815,14 +840,14 @@ function matSheet(m){
     if(fresh)m=S.mats.filter(function(x){return x.id===m.id;})[0]||m;
     var tx=S.mtx.filter(function(x){return x.mat===m.id;}).slice(0,25),lowF=n(m.min)>0&&n(m.stock)<=n(m.min);
     wantNames(tx.map(function(x){return x.by;}));
-    var h='<div class="row"><div><div class="eyebrow">'+(m.cat==='core'?'Core material':'Consumable')+'</div><div class="num" style="font:600 30px/1.1 var(--mono)">'+fq(m.stock)+' <span class="small muted">'+esc(m.unit||'')+' in stock</span></div></div><span class="sp"></span>'+(lowF?'<span class="chip bad">Below minimum</span>':'')+'</div>'+
+    var h='<div class="row">'+thumb(m,56)+'<div><div class="eyebrow">'+(m.cat==='core'?'Core material':'Consumable')+'</div><div class="num" style="font:600 30px/1.1 var(--mono)">'+fq(m.stock)+' <span class="small muted">'+esc(m.unit||'')+' in stock</span></div></div><span class="sp"></span>'+(lowF?'<span class="chip bad">Below minimum</span>':'')+'</div>'+
       '<dl class="kv">'+kv('Received so far',fq(m.received)+' '+(m.unit||''))+kv('Issued so far',fq(m.issued)+' '+(m.unit||''))+(m.boq?kv('BOQ quantity',fq(m.boq)+' '+(m.unit||'')+' ('+Math.round(n(m.received)/n(m.boq)*100)+'% received)'):'')+kv('Minimum level',m.min?fq(m.min)+' '+(m.unit||''):'')+'</dl>';
     h+='<div class="seg" role="group"><button type="button" data-mm="in" aria-pressed="'+(mode==='in')+'">Receive</button><button type="button" data-mm="out" aria-pressed="'+(mode==='out')+'">Issue / use</button><button type="button" data-mm="edit" aria-pressed="'+(mode==='edit')+'">Edit</button></div>';
     if(mode==='edit'){
       h+='<form id="me" style="display:flex;flex-direction:column;gap:12px"><label class="f"><span>Name</span><input id="me-name" required value="'+esc(m.name)+'"></label>'+
         '<div class="g2"><label class="f"><span>Type</span><select id="me-cat">'+opts([['core','Core material'],['cons','Consumable']],m.cat)+'</select></label><label class="f"><span>Unit</span><select id="me-unit">'+opts(UNITS.indexOf(m.unit)<0&&m.unit?UNITS.concat([m.unit]):UNITS,m.unit)+'</select></label></div>'+
         '<div class="g2"><label class="f"><span>Minimum level</span><input id="me-min" type="number" min="0" step="any" value="'+esc(m.min)+'"></label><label class="f"><span>BOQ quantity</span><input id="me-boq" type="number" min="0" step="any" value="'+esc(m.boq)+'"></label></div>'+
-        '<label class="f"><span>Correct stock to (after physical count)</span><input id="me-stock" type="number" min="0" step="any" value="'+esc(m.stock)+'"></label>'+
+        photoRow(m,'mats')+'<label class="f"><span>Correct stock to (after physical count)</span><input id="me-stock" type="number" min="0" step="any" value="'+esc(m.stock)+'"></label>'+
         '<button class="btn pri" type="submit">Save</button><button class="btn danger" type="button" id="me-del">Delete material</button></form>';
     }else{
       h+='<form id="mt" style="display:flex;flex-direction:column;gap:12px"><div class="g2"><label class="f"><span>Quantity ('+esc(m.unit||'')+')</span><input id="mt-q" type="number" min="0" step="any" inputmode="decimal" required></label><label class="f"><span>Date</span><input id="mt-d" type="date" value="'+S.date+'"></label></div>'+
@@ -846,6 +871,7 @@ function matSheet(m){
     };
     var me=$('#me');
     if(me){
+      bindPhoto(m,'mats',function(){draw('edit');});
       me.onsubmit=function(e){
         e.preventDefault();
         var ns=numv('me-stock'),up={name:val('me-name'),cat:val('me-cat'),unit:val('me-unit'),min:numv('me-min'),boq:numv('me-boq')};
@@ -890,10 +916,10 @@ function toolSheet(x){
     if(fresh)x=S.tools.filter(function(t){return t.id===x.id;})[0]||x;
     var s=TSTAT[x.status||'available']||TSTAT.available,lg=S.tlog.filter(function(l){return l.tool===x.id;}).slice(0,20);
     wantNames(lg.map(function(l){return l.by;}));
-    var h='<div class="row"><span class="chip '+s[1]+'">'+s[0]+'</span>'+(x.status==='issued'&&x.holder?'<span class="small">with <b>'+esc(x.holder)+'</b>'+(x.since?' since '+fd(x.since):'')+'</span>':'')+'</div>'+
+    var h='<div class="row">'+thumb(x,56)+'<span class="chip '+s[1]+'">'+s[0]+'</span>'+(x.status==='issued'&&x.holder?'<span class="small">with <b>'+esc(x.holder)+'</b>'+(x.since?' since '+fd(x.since):'')+'</span>':'')+'</div>'+
       '<dl class="kv">'+kv('Type',x.kind==='machine'?'Machine':'Tool')+kv('Code / serial',x.code)+kv('Quantity',n(x.qty)>1?fq(x.qty):'')+kv('Condition',x.cond)+kv('Ownership',x.own==='hired'?'Hired'+(x.vendor?' from '+x.vendor:''):'Own')+
       (x.own==='hired'?kv('Hire rate',x.hireRate?'₹ '+fq(x.hireRate)+' per day':'')+kv('Hired until',fd(x.hireTill)):'')+'</dl>';
-    if(edit){h+=form();$('#shB').innerHTML=h;bindForm();return;}
+    if(edit){h+=photoRow(x,'tools')+form();$('#shB').innerHTML=h;bindForm();bindPhoto(x,'tools',function(){draw(true);});return;}
     var acts=[];
     if(x.status==='available'||!x.status)acts.push(['issue','Issue to someone'],['repair','Send for repair']);
     if(x.status==='issued')acts.push(['back','Returned to store'],['repair','Send for repair']);
@@ -942,8 +968,8 @@ function loadXlsx(){
   return xlsxP;
 }
 var BULK=[
-  {key:'workers',sheet:'Workers',cols:['Name*','Trade','Contractor / agency','Phone','Daily wage (Rs)'],
-    note:'One row per person. A name already in the app is updated, not repeated.'},
+  {key:'workers',sheet:'Workers',cols:['Name*','Trade','Contractor / agency','Phone','Pay basis (Month / Day)','Basic (Rs)','Allowances / incentives (Rs)','Agreed CTC per month (Rs)','PF (Yes / No)','ESIC (Yes / No)'],
+    note:'One row per person. A name already in the app is updated, not repeated. Basic and allowances are per month, or per day when the pay basis is Day. A row whose salary comes above the agreed CTC is skipped.'},
   {key:'materials',sheet:'Materials',cols:['Material name*','Type (Core / Consumable)','Unit','Opening stock','Minimum level','BOQ quantity'],
     note:'Opening stock is used only for materials that are new to the app. For existing materials, record receipts in Stores instead.'},
   {key:'tools',sheet:'Tools & Machines',cols:['Name*','Type (Tool / Machine)','Code / serial','Quantity','Ownership (Own / Hired)','Condition','Hired from','Hire rate per day (Rs)','Hired until (date)'],
@@ -997,7 +1023,10 @@ function parseBulk(wb){
       var row=o._row,err=function(m){R.errors.push('Row '+row+': '+m);};
       if(def.key==='workers'){
         var name=cstr(o[0]);if(!name)return err('name is empty');
-        var w={name:name,trade:cstr(o[1]),contractor:cstr(o[2]),phone:cstr(o[3]),rate:cnum(o[4])};
+        var bs=cstr(o[4]),yn=function(v){v=cstr(v);return v===''?'':!/^n/i.test(v);};
+        var w={name:name,trade:cstr(o[1]),contractor:cstr(o[2]),phone:cstr(o[3]),basis:bs===''?'':(/day|daily/i.test(bs)?'day':'month'),basic:cnum(o[5]),allow:cnum(o[6]),ctc:cnum(o[7]),pf:yn(o[8]),esi:yn(o[9])};
+        var ex0=S.workers.filter(function(x){return lc(x.name)===lc(name);})[0],m0=Object.assign({},ex0||{});Object.keys(w).forEach(function(k){if(w[k]!=='')m0[k]=w[k];});
+        var q0=wPay(m0),c0=calcPay(q0,payCfg());if(q0.ctc&&c0.ctc>q0.ctc)return err('salary comes to '+rs(c0.ctc)+' CTC, above the agreed '+rs(q0.ctc));
         var ex=S.workers.filter(function(x){return lc(x.name)===lc(name);})[0];
         if(ex)R.updates++;else R.adds++;R.rows.push({d:w,ex:ex});
       }else if(def.key==='materials'){
@@ -1047,7 +1076,7 @@ function bulkTemplate(){
   var wi=X.utils.aoa_to_sheet(info);wi['!cols']=[{wch:110}];X.utils.book_append_sheet(wb,wi,'Instructions');
   BULK.forEach(function(d){
     var rows=[d.cols];
-    if(d.key==='workers')activeWorkers().forEach(function(w){rows.push([w.name,w.trade||'',w.contractor||'',w.phone||'',w.rate===''||w.rate==null?'':w.rate]);});
+    if(d.key==='workers')activeWorkers().forEach(function(w){var q=wPay(w);rows.push([w.name,w.trade||'',w.contractor||'',w.phone||'',q.basis==='day'?'Day':'Month',q.basic||'',q.allow||'',q.ctc,q.pf?'Yes':'No',q.esi?'Yes':'No']);});
     if(d.key==='materials')S.mats.slice().sort(function(a,b){return (a.name||'').localeCompare(b.name||'');}).forEach(function(m){rows.push([m.name,m.cat==='cons'?'Consumable':'Core',m.unit||'',m.stock,m.min===''||m.min==null?'':m.min,m.boq===''||m.boq==null?'':m.boq]);});
     if(d.key==='tools')S.tools.forEach(function(x){rows.push([x.name,x.kind==='machine'?'Machine':'Tool',x.code||'',x.qty||1,x.own==='hired'?'Hired':'Own',x.cond||'',x.vendor||'',x.hireRate===''||x.hireRate==null?'':x.hireRate,x.hireTill||'']);});
     if(d.key==='stages'&&p)(p.stages||[]).forEach(function(s){rows.push([s.name,n(s.weight),n(s.pct)]);});
@@ -1117,7 +1146,7 @@ function runBulk(R,pick){
   if(pick.workers){
     R.workers.rows.forEach(function(r){
       var id=r.ex?r.ex.id:uid(),base=r.ex?Object.assign({},r.ex):{};delete base.id;
-      var d=r.d;['trade','contractor','phone'].forEach(function(k){if(d[k]==='')delete d[k];});if(d.rate==='')delete d.rate;
+      var d=r.d;['trade','contractor','phone'].forEach(function(k){if(d[k]==='')delete d[k];});['basis','basic','allow','ctc','pf','esi'].forEach(function(k){if(d[k]==='')delete d[k];});
       var o=Object.assign(base,d,{active:true});nameToId[lc(d.name)]=id;
       tasks.push(function(){return col('workers').doc(id).set(o);});
     });
@@ -1182,6 +1211,474 @@ function runBulk(R,pick){
   return inChunks(tasks).then(function(){return 'Imported '+done.join(', ')+'.';});
 }
 
+/* ---------- salary, PF, ESIC, advances and CTC ---------- */
+var PAYDEF={pfEe:12,pfEr:13,capOn:true,cap:15000,esiEe:0.75,esiEr:3.25,esiLim:21000,days:26};
+function payCfg(){var p=proj()||{};return Object.assign({},PAYDEF,p.pay||{});}
+function wPay(w){
+  w=w||{};
+  var old=w.basic==null&&w.rate!=null&&w.rate!=='';
+  var basis=w.basis||(old?'day':'month');
+  return {basis:basis,basic:w.basic!=null&&w.basic!==''?n(w.basic):(old?n(w.rate):0),allow:n(w.allow),
+    ctc:w.ctc===''||w.ctc==null?'':n(w.ctc),pf:w.pf!==false,esi:w.esi!==false};
+}
+/* f = share of the full month earned (1 = full month). Daily rates count C.days days as a month. */
+function calcPay(q,C,f){
+  if(f==null)f=1;
+  var mult=q.basis==='day'?C.days:1,bF=q.basic*mult,aF=q.allow*mult,gF=bF+aF;
+  var b=Math.round(bF*f),a=Math.round(aF*f),g=b+a;
+  var pfw=q.pf?(C.capOn?Math.min(b,C.cap):b):0;
+  var pfEe=Math.round(pfw*C.pfEe/100),pfEr=Math.round(pfw*C.pfEr/100);
+  var esiOn=q.esi&&gF>0&&gF<=C.esiLim;
+  var esiEe=esiOn?Math.ceil(g*C.esiEe/100):0,esiEr=esiOn?Math.ceil(g*C.esiEr/100):0;
+  return {basic:b,allow:a,gross:g,grossFull:gF,pfEe:pfEe,pfEr:pfEr,esiOn:esiOn,esiEe:esiEe,esiEr:esiEr,ctc:g+pfEr+esiEr,net:g-pfEe-esiEe};
+}
+/* Largest allowance that keeps the calculated CTC at or under the agreed CTC. null = basic alone is over. */
+function fitAllow(q,C){
+  var T=n(q.ctc);if(!T)return null;
+  var mult=q.basis==='day'?C.days:1,bF=q.basic*mult;
+  var pfw=q.pf?(C.capOn?Math.min(bF,C.cap):bF):0,pfEr=Math.round(pfw*C.pfEr/100);
+  if(T-pfEr<bF)return null;
+  var g1=(T-pfEr)/(1+C.esiEr/100),g=(q.esi&&g1<=C.esiLim)?g1:T-pfEr;
+  var step=q.basis==='day'?0.01:1,al=Math.floor((g-bF)/mult/step)*step,t=Object.assign({},q);
+  for(var i=0;i<400;i++){t.allow=al;if(calcPay(t,C).ctc<=T||al<=0)break;al=Math.round((al-step)*100)/100;}
+  t.allow=Math.max(0,al);
+  if(calcPay(t,C).ctc>T)return null;
+  return Math.round(t.allow*100)/100;
+}
+function rs(v){return '₹ '+Number(Math.round(n(v))).toLocaleString('en-IN');}
+function ctcStatus(q,c){
+  if(q.ctc===''||!q.ctc)return ['','No CTC set'];
+  var d=q.ctc-c.ctc;
+  if(d<0)return ['bad','Over CTC by '+rs(-d)];
+  if(d<1)return ['good','Matches CTC'];
+  return ['flame',rs(d)+' left for allowances'];
+}
+function payBadge(w){var q=wPay(w),c=calcPay(q,payCfg()),s=ctcStatus(q,c);return '<span class="chip '+s[0]+'">'+esc(s[1])+'</span>';}
+
+function attSeg(){
+  var k=S.attTab||'mark';
+  return '<div class="seg seg4" role="group" aria-label="Attendance section">'+[['mark','Attendance'],['pay','Salary & CTC'],['adv','Advances'],['sal','Salary sheet']].map(function(o){return '<button type="button" data-act="atab" data-v="'+o[0]+'" aria-pressed="'+(k===o[0])+'">'+o[1]+'</button>';}).join('')+'</div>';
+}
+function vPay(){
+  var C=payCfg(),ws=activeWorkers(),tA=0,tC=0,over=0;
+  var h='<section class="card"><div class="ch"><div><div class="eyebrow">Salary structure</div><h3>Monthly pay against agreed CTC</h3></div><button class="btn sm" type="button" data-act="payCfg">PF &amp; ESIC rates</button></div>'+
+    '<div class="small muted">Gross = basic + allowances and incentives. CTC = gross + employer PF ('+C.pfEr+'%) + employer ESIC ('+C.esiEr+'%, when gross is up to '+rs(C.esiLim)+'). Salary can’t be saved above the agreed CTC; the gap shows what is left for allowances or incentives.</div></section>';
+  h+='<section class="card flush"><div class="ch"><h2>Workers ('+ws.length+')</h2><button class="btn sm" type="button" data-act="bulk">Upload Excel</button></div>';
+  if(!ws.length)h+='<div class="empty">Add workers under Attendance first.</div>';
+  ws.forEach(function(w){
+    var q=wPay(w),c=calcPay(q,C),s=ctcStatus(q,c);
+    if(q.ctc)tA+=q.ctc;tC+=c.ctc;if(s[0]==='bad')over++;
+    h+='<button type="button" class="li" data-act="editPay" data-id="'+w.id+'"><div class="main"><div class="t">'+esc(w.name)+'</div><div class="d">'+
+      (q.basic?esc((q.basis==='day'?rs(q.basic)+'/day':rs(q.basic)+'/month')+' basic'+(q.allow?' + '+rs(q.allow)+' allowances':'')+' · CTC '+rs(c.ctc)+(q.ctc?' of '+rs(q.ctc):'')):'Tap to enter salary and CTC')+'</div></div>'+
+      '<span class="chip '+s[0]+'">'+esc(s[1])+'</span></button>';
+  });
+  h+='</section>';
+  if(ws.length)h+='<section class="card"><dl class="kv">'+kv('Agreed CTC, all workers',tA?rs(tA)+' per month':'')+kv('Calculated CTC',rs(tC)+' per month')+(tA?kv('Difference',Math.abs(tA-tC)<1?'None':tA-tC>0?rs(tA-tC)+' under':rs(tC-tA)+' over'):'')+'</dl>'+(over?'<div class="alert bad">'+over+' worker'+(over>1?'s are':' is')+' paid above the agreed CTC. Open them and reduce allowances.</div>':'')+'</section>';
+  return h;
+}
+function paySheet(w){
+  var C=payCfg(),q=wPay(w);
+  sheet('Salary · '+w.name,'<form id="pyf" class="sh-b" style="padding:0">'+
+    '<div class="g2"><label class="f"><span>Pay basis</span><select id="py-basis">'+opts([['month','Monthly salary'],['day','Daily wage']],q.basis)+'</select></label>'+
+    '<label class="f"><span>Agreed CTC (₹ per month)</span><input id="py-ctc" type="number" min="0" step="any" inputmode="decimal" value="'+esc(q.ctc)+'"></label></div>'+
+    '<div class="g2"><label class="f"><span id="py-bl">Basic salary</span><input id="py-basic" type="number" min="0" step="any" inputmode="decimal" value="'+esc(q.basic||'')+'"></label>'+
+    '<label class="f"><span id="py-al">Allowances / incentives</span><input id="py-allow" type="number" min="0" step="any" inputmode="decimal" value="'+esc(q.allow||'')+'"></label></div>'+
+    '<div class="row"><label class="row" style="gap:6px"><input type="checkbox" id="py-pf"'+(q.pf?' checked':'')+'> PF applies</label><label class="row" style="gap:6px"><input type="checkbox" id="py-esi"'+(q.esi?' checked':'')+'> ESIC applies</label></div>'+
+    '<div id="py-out"></div>'+
+    '<button class="btn" type="button" id="py-fit">Fit allowances to the agreed CTC</button>'+
+    '<button class="btn pri" type="submit" id="py-save">Save salary</button></form>',
+  function(b){
+    function read(){return {basis:val('py-basis'),basic:n(val('py-basic')),allow:n(val('py-allow')),ctc:val('py-ctc')===''?'':n(val('py-ctc')),pf:$('#py-pf').checked,esi:$('#py-esi').checked};}
+    function draw(){
+      var r=read(),c=calcPay(r,C),s=ctcStatus(r,c),u=r.basis==='day'?'per day':'per month';
+      $('#py-bl').textContent='Basic salary (₹ '+u+')';$('#py-al').textContent='Allowances / incentives (₹ '+u+')';
+      var row=function(k,v,cls){return '<tr><td style="white-space:normal">'+k+'</td><td class="n"'+(cls?' style="'+cls+'"':'')+'>'+v+'</td></tr>';};
+      $('#py-out').innerHTML=(r.basis==='day'?'<div class="small muted">Monthly figures below count '+C.days+' working days.</div>':'')+
+        '<div class="tw"><table class="tb" style="width:100%"><tbody>'+row('Basic',rs(c.basic))+row('Allowances / incentives',rs(c.allow))+row('<b>Gross salary</b>','<b>'+rs(c.gross)+'</b>')+
+        row('Employee PF '+C.pfEe+'%','− '+rs(c.pfEe))+row('Employee ESIC '+C.esiEe+'%'+(r.esi&&!c.esiOn?' (gross above '+rs(C.esiLim)+')':''),'− '+rs(c.esiEe))+
+        row('Take-home before advances',rs(c.net))+row('Employer PF '+C.pfEr+'%',rs(c.pfEr))+row('Employer ESIC '+C.esiEr+'%',rs(c.esiEr))+
+        row('<b>Calculated CTC</b>','<b>'+rs(c.ctc)+'</b>')+(r.ctc?row('Agreed CTC',rs(r.ctc))+row('<b>Difference</b>','<b>'+(r.ctc-c.ctc>=0?rs(r.ctc-c.ctc):'− '+rs(c.ctc-r.ctc))+'</b>',r.ctc-c.ctc<0?'color:var(--bad)':'color:var(--good)'):'')+
+        '</tbody></table></div>'+(r.ctc?'<div class="alert '+(s[0]==='bad'?'bad':'good')+'">'+esc(s[0]==='bad'?s[1]+'. Reduce allowances, or tap Fit to bring it within the CTC.':s[0]==='good'?'Salary matches the agreed CTC.':s[1]+'. Add it as allowances or incentives, or tap Fit.')+'</div>':'');
+      $('#py-save').disabled=s[0]==='bad';
+    }
+    var pf=$('#pyf',b);pf.addEventListener('input',draw);pf.addEventListener('change',draw);draw();
+    $('#py-fit').onclick=function(){
+      var r=read();if(!r.ctc){toast('Enter the agreed CTC first.');return;}
+      var a=fitAllow(r,C);if(a==null){toast('The basic salary with PF and ESIC is already above the agreed CTC. Lower the basic.');return;}
+      $('#py-allow').value=a;draw();toast('Allowances set to '+(r.basis==='day'?'₹ '+a+' per day':rs(a)+' per month'));
+    };
+    $('#pyf').onsubmit=function(e){
+      e.preventDefault();var r=read(),c=calcPay(r,C);
+      if(r.ctc&&c.ctc>r.ctc){toast('Salary is above the agreed CTC by '+rs(c.ctc-r.ctc)+'.');return;}
+      var o=Object.assign({},w,r);delete o.id;
+      put('workers',w.id,o).then(function(){closeSheet();toast('Salary saved');},function(){});
+    };
+  });
+}
+function payCfgSheet(){
+  var C=payCfg(),p=proj();
+  var f=function(id,l,v){return '<label class="f"><span>'+l+'</span><input id="'+id+'" type="number" min="0" step="any" inputmode="decimal" value="'+esc(v)+'"></label>';};
+  sheet('PF and ESIC rates','<form id="pcf" class="sh-b" style="padding:0"><div class="small muted">These apply to every worker on this project. Check them against the current EPFO and ESIC notifications.</div>'+
+    '<div class="g2">'+f('pc-pfee','Employee PF %',C.pfEe)+f('pc-pfer','Employer PF % (incl. admin and EDLI)',C.pfEr)+'</div>'+
+    '<div class="g2">'+f('pc-cap','PF wage ceiling (₹)',C.cap)+'<label class="f"><span>PF on</span><select id="pc-capon">'+opts([['1','Basic up to the ceiling'],['0','Full basic']],C.capOn?'1':'0')+'</select></label></div>'+
+    '<div class="g3">'+f('pc-esee','Employee ESIC %',C.esiEe)+f('pc-eser','Employer ESIC %',C.esiEr)+f('pc-eslim','ESIC gross limit (₹)',C.esiLim)+'</div>'+
+    f('pc-days','Days counted as a full month',C.days)+'<div class="small muted">Monthly staff are paid days worked ÷ this number (capped at a full month). Daily-wage CTC is compared over this many days.</div>'+
+    '<button class="btn pri" type="submit">Save rates</button></form>',function(b){
+    $('#pcf',b).onsubmit=function(e){e.preventDefault();
+      var d={pfEe:n(val('pc-pfee')),pfEr:n(val('pc-pfer')),cap:n(val('pc-cap')),capOn:val('pc-capon')==='1',esiEe:n(val('pc-esee')),esiEr:n(val('pc-eser')),esiLim:n(val('pc-eslim')),days:Math.max(1,n(val('pc-days'))||26)};
+      S.db.collection('projects').doc(p.id).update({pay:d}).then(function(){closeSheet();toast('Rates saved');},fail);};
+  });
+}
+
+/* advances */
+function monthOf(s){return String(s||'').slice(0,7);}
+function monthName(m){return MON[+m.slice(5,7)-1]+' '+m.slice(0,4);}
+function wName(id){var w=S.workers.filter(function(x){return x.id===id;})[0];return w?w.name:'(removed worker)';}
+function vAdv(){
+  var m=monthOf(S.date),ws=activeWorkers(),rows=S.adv.filter(function(a){return monthOf(a.date)===m;}).sort(function(a,b){return a.date<b.date?1:-1;});
+  var tot=rows.reduce(function(s,a){return s+n(a.amt);},0);
+  var h='<section class="card"><div class="ch"><div><div class="eyebrow">Advances paid</div><h3>'+monthName(m)+'</h3></div><span class="chip flame">'+rs(tot)+'</span></div>'+
+    '<div class="small muted">Advances are taken back from the salary of the month they are dated in. Change the date at the top to see another month.</div>'+
+    (ws.length?'<form id="advForm" style="display:flex;flex-direction:column;gap:10px"><div class="g2"><label class="f"><span>Worker</span><select id="av-w" required><option value="">Choose</option>'+opts(ws.map(function(w){return [w.id,w.name];}),'')+'</select></label>'+
+    '<label class="f"><span>Amount (₹)</span><input id="av-a" type="number" min="1" step="any" inputmode="decimal" required></label></div>'+
+    '<div class="g2"><label class="f"><span>Date</span><input id="av-d" type="date" value="'+S.date+'"></label><label class="f"><span>Paid by</span><select id="av-m">'+opts(['Cash','UPI','Bank transfer'],'Cash')+'</select></label></div>'+
+    '<label class="f"><span>Note (optional)</span><input id="av-n" placeholder="Festival advance"></label><button class="btn pri" type="submit">Record advance</button></form>':'<div class="muted small">Add workers first.</div>')+'</section>';
+  h+='<section class="card flush"><div class="ch"><h2>This month ('+rows.length+')</h2></div>';
+  if(!S.loaded.adv)h+='<div class="empty">Loading…</div>';
+  else if(!rows.length)h+='<div class="empty">No advances in '+monthName(m)+'.</div>';
+  wantNames(rows.map(function(a){return a.by;}));
+  rows.forEach(function(a){
+    h+='<div class="li"><div class="main"><div class="t">'+esc(wName(a.wid))+' <span class="num">'+rs(a.amt)+'</span></div><div class="d">'+esc([fd(a.date,true),a.mode,a.note,nameOf(a.by)?'by '+nameOf(a.by):''].filter(Boolean).join(' · '))+'</div></div>'+
+      '<button type="button" class="x" data-act="delAdv" data-id="'+a.id+'" aria-label="Delete advance">×</button></div>';
+  });
+  return h+'</section>';
+}
+
+/* monthly salary sheet */
+function salaryRows(m){
+  var C=payCfg(),days={},ot={},adv={};
+  Object.keys(S.att).forEach(function(k){if(k.slice(0,7)!==m)return;var a=S.att[k];
+    Object.keys(a.marks||{}).forEach(function(id){var v=a.marks[id];days[id]=(days[id]||0)+(v==='P'?1:v==='H'?0.5:0);});
+    Object.keys(a.ot||{}).forEach(function(id){ot[id]=(ot[id]||0)+n(a.ot[id]);});});
+  S.adv.forEach(function(a){if(monthOf(a.date)===m)adv[a.wid]=(adv[a.wid]||0)+n(a.amt);});
+  return S.workers.filter(function(w){return w.active!==false||days[w.id]||adv[w.id];}).sort(function(a,b){return (a.name||'').localeCompare(b.name||'');}).map(function(w){
+    var q=wPay(w),d=days[w.id]||0,f=q.basis==='day'?d/C.days:Math.min(d,C.days)/C.days,c=calcPay(q,C,f),ad=adv[w.id]||0;
+    return {w:w,q:q,days:d,ot:ot[w.id]||0,c:c,adv:ad,net:c.net-ad};
+  });
+}
+function vSal(){
+  var m=monthOf(S.date),C=payCfg(),R=salaryRows(m),T={g:0,pf:0,es:0,ad:0,net:0,ctc:0};
+  R.forEach(function(r){T.g+=r.c.gross;T.pf+=r.c.pfEe;T.es+=r.c.esiEe;T.ad+=r.adv;T.net+=r.net;T.ctc+=r.c.ctc;});
+  var h='<section class="card"><div class="ch"><div><div class="eyebrow">Salary sheet</div><h3>'+monthName(m)+'</h3></div><span class="chip">'+rs(T.net)+' payable</span></div>'+
+    '<div class="small muted">Days worked come from attendance (half day = 0.5). A full month is '+C.days+' days. Overtime hours are listed but not paid here.</div>'+
+    '<div class="row">'+(S.dl?'<button class="btn sm" type="button" data-act="exportSal">Download '+monthName(m)+' (CSV)</button>':'')+'<button class="btn sm" type="button" data-act="payCfg">PF &amp; ESIC rates</button></div></section>';
+  if(!R.length)return h+'<section class="card"><div class="empty">No workers yet.</div></section>';
+  h+='<section class="card flush"><div class="tw" style="border:0;border-radius:0"><table class="tb"><thead><tr><th>Worker</th><th class="n">Days</th><th class="n">Gross</th><th class="n">PF</th><th class="n">ESIC</th><th class="n">Advance</th><th class="n">Net pay</th><th class="n">CTC</th></tr></thead><tbody>'+
+    R.map(function(r){return '<tr><td>'+esc(r.w.name)+'<div class="small muted">'+(r.q.basic?(r.q.basis==='day'?rs(r.q.basic)+'/day':rs(r.q.basic)+'/mo basic'):'No salary set')+(r.ot?' · OT '+fq(r.ot)+' h':'')+'</div></td><td class="n">'+fq(r.days)+'</td><td class="n">'+fq(r.c.gross)+'</td><td class="n">'+fq(r.c.pfEe)+'</td><td class="n">'+fq(r.c.esiEe)+'</td><td class="n">'+fq(r.adv)+'</td><td class="n" style="font-weight:600'+(r.net<0?';color:var(--bad)':'')+'">'+fq(r.net)+'</td><td class="n">'+fq(r.c.ctc)+'</td></tr>';}).join('')+
+    '<tr><td><b>Total</b></td><td></td><td class="n"><b>'+fq(T.g)+'</b></td><td class="n"><b>'+fq(T.pf)+'</b></td><td class="n"><b>'+fq(T.es)+'</b></td><td class="n"><b>'+fq(T.ad)+'</b></td><td class="n"><b>'+fq(T.net)+'</b></td><td class="n"><b>'+fq(T.ctc)+'</b></td></tr>'+
+    '</tbody></table></div></section>';
+  var neg=R.filter(function(r){return r.net<0;});
+  if(neg.length)h+='<div class="alert bad">'+neg.length+' worker'+(neg.length>1?'s have':' has')+' advances larger than this month’s pay. Carry the balance to next month by re-dating part of the advance.</div>';
+  return h;
+}
+function exportSal(){
+  var m=monthOf(S.date),R=salaryRows(m);
+  var rows=[['Worker','Trade','Pay basis','Days worked','OT hours','Basic earned','Allowances earned','Gross earned','Employee PF','Employee ESIC','Advances','Net payable','Employer PF','Employer ESIC','CTC earned','Agreed CTC per month']];
+  R.forEach(function(r){var c=r.c;rows.push([r.w.name,r.w.trade||'',r.q.basis==='day'?'Daily':'Monthly',r.days,r.ot,c.basic,c.allow,c.gross,c.pfEe,c.esiEe,r.adv,r.net,c.pfEr,c.esiEr,c.ctc,r.q.ctc]);});
+  dl('Salary '+safe(proj().name)+' '+monthName(m)+'.csv',csv(rows));
+}
+
+/* ---------- picture catalogue of materials, tools and machines ---------- */
+var ICONS={
+pipe:'<rect class="s" x="4" y="18" width="34" height="12" rx="2"/><ellipse class="s" cx="38" cy="24" rx="4" ry="6"/><ellipse cx="38" cy="24" rx="1.8" ry="3"/>',
+elbow:'<path class="s" d="M6 30h14a4 4 0 0 0 4-4V8h10v18a14 14 0 0 1-14 14H6z"/>',
+tee:'<path class="s" d="M4 16h40v12H30v16H18V28H4z"/>',
+reducer:'<path class="s" d="M4 14h14l12 6h14v8H30l-12 6H4z"/>',
+flange:'<rect class="s" x="24" y="17" width="20" height="14"/><rect class="a" x="14" y="6" width="10" height="36" rx="2"/><circle cx="19" cy="11" r="1.6"/><circle cx="19" cy="37" r="1.6"/>',
+coupling:'<rect class="s" x="4" y="19" width="14" height="10"/><rect class="s" x="30" y="19" width="14" height="10"/><rect class="a" x="16" y="15" width="16" height="18" rx="2"/><path d="M21 15v18M27 15v18"/>',
+groove:'<rect class="s" x="4" y="19" width="40" height="10"/><rect class="a" x="15" y="12" width="18" height="24" rx="9"/><path d="M11 24h4M33 24h4"/>',
+gate:'<rect class="s" x="4" y="30" width="40" height="9" rx="1"/><path class="a" d="M15 39V27l9-4 9 4v12z"/><path d="M24 23V12"/><ellipse class="a" cx="24" cy="10" rx="11" ry="3.5"/>',
+bfly:'<rect class="s" x="13" y="18" width="22" height="24" rx="3"/><circle cx="24" cy="30" r="7"/><path d="M24 23v14M24 18v-8"/><rect class="r" x="22" y="6" width="22" height="4.5" rx="2"/>',
+nrv:'<rect class="s" x="4" y="24" width="40" height="10"/><path class="a" d="M13 17h22v24H13z"/><path d="M17 29h13M26 25l4 4-4 4"/>',
+ball:'<rect class="s" x="4" y="24" width="40" height="10"/><rect class="a" x="16" y="19" width="16" height="20" rx="4"/><path d="M24 19v-6"/><rect class="r" x="22" y="9" width="21" height="4.5" rx="2"/>',
+alarmv:'<rect class="s" x="18" y="4" width="12" height="40"/><rect class="a" x="12" y="16" width="24" height="16" rx="4"/><circle class="w" cx="41" cy="11" r="5"/><path d="M36 11h-6M41 11l2-2"/>',
+flowsw:'<rect class="s" x="4" y="28" width="40" height="10"/><rect class="a" x="15" y="10" width="18" height="14" rx="2"/><path d="M24 24v4M20 16h8"/>',
+sprinkler:'<path d="M24 4v7"/><rect class="s" x="18" y="10" width="12" height="7" rx="1"/><path d="M19 17l-5 17M29 17l5 17"/><ellipse class="r" cx="24" cy="25" rx="2.6" ry="5.5"/><path class="a" d="M9 35h30l-4 4H13z"/>',
+hydrant:'<path class="s" d="M8 42h20V24H8z"/><path class="a" d="M12 24v-8h12v8"/><path d="M18 16V9"/><ellipse class="a" cx="18" cy="8" rx="8" ry="2.6"/><path class="s" d="M28 29h10v8H28z"/><circle class="r" cx="41" cy="33" r="3.4"/>',
+hosereel:'<circle class="a" cx="22" cy="24" r="17"/><circle class="w" cx="22" cy="24" r="10"/><circle cx="22" cy="24" r="3"/><path d="M39 24h5v16"/>',
+hose:'<circle class="a" cx="21" cy="26" r="15"/><circle class="w" cx="21" cy="26" r="10"/><circle cx="21" cy="26" r="5"/><rect class="s" x="36" y="22" width="8" height="8" rx="1"/>',
+nozzle:'<rect class="s" x="3" y="20" width="11" height="8" rx="1"/><path class="a" d="M14 17h6l20 5v4l-20 5h-6z"/><path d="M40 22h5v4h-5"/>',
+cabinet:'<rect class="a" x="8" y="4" width="32" height="40" rx="2"/><rect class="w" x="12" y="8" width="24" height="22"/><circle cx="24" cy="19" r="7"/><circle cx="24" cy="19" r="3"/><path d="M14 36h20"/>',
+inlet:'<rect class="s" x="20" y="24" width="8" height="20"/><rect class="a" x="6" y="10" width="36" height="14" rx="3"/><circle cx="13" cy="17" r="3"/><circle cx="21" cy="17" r="3"/><circle cx="29" cy="17" r="3"/><circle cx="37" cy="17" r="2.4"/>',
+pump:'<rect class="s" x="4" y="14" width="20" height="18" rx="3"/><path d="M9 14v18M14 14v18M19 14v18M24 23h3"/><circle class="a" cx="35" cy="23" r="9"/><path d="M35 14V6h7M3 38h42M8 32v6M40 32v6"/>',
+dpump:'<rect class="s" x="4" y="12" width="22" height="20" rx="2"/><path d="M8 12V7h9v5M9 19h12M9 25h12M26 22h3"/><circle class="a" cx="36" cy="22" r="8"/><path d="M3 38h42M8 32v6M40 30v8"/>',
+panel:'<rect class="s" x="10" y="4" width="28" height="40" rx="2"/><circle class="r" cx="17" cy="11" r="2.4"/><circle class="a" cx="24" cy="11" r="2.4"/><circle cx="31" cy="11" r="2.4"/><rect class="w" x="15" y="18" width="18" height="10" rx="1"/><path d="M15 36h5M28 36h5"/>',
+gauge:'<circle class="s" cx="24" cy="21" r="16"/><path d="M24 21l7-7M11 21h3M34 21h3M24 8v3M20 37v7h8v-7"/>',
+pswitch:'<rect class="s" x="11" y="6" width="26" height="24" rx="3"/><path d="M17 14h14M17 21h9M24 30v6"/><path class="a" d="M17 36h14v7H17z"/>',
+facp:'<rect class="s" x="5" y="6" width="38" height="34" rx="2"/><rect class="w" x="10" y="11" width="20" height="10" rx="1"/><circle class="r" cx="36" cy="13" r="2.2"/><circle class="a" cx="36" cy="20" r="2.2"/><path d="M10 28h28M10 34h28"/>',
+smoke:'<path d="M5 10h38"/><path class="s" d="M10 10v6c0 6 6 10 14 10s14-4 14-10v-6z"/><circle class="r" cx="24" cy="19" r="2.2"/><path d="M14 36c2-2 4 2 6 0s4 2 6 0 4 2 6 0M18 42c2-2 4 2 6 0s4 2 6 0"/>',
+heat:'<path d="M5 10h38"/><path class="s" d="M10 10v6c0 6 6 10 14 10s14-4 14-10v-6z"/><path d="M24 30v7"/><circle class="r" cx="24" cy="40" r="3.4"/><path d="M14 33l-3 3M34 33l3 3"/>',
+mcp:'<rect class="r" x="8" y="8" width="32" height="32" rx="3"/><rect class="w" x="15" y="15" width="18" height="18"/><path d="M19 29l10-10"/>',
+hooter:'<rect class="s" x="8" y="18" width="16" height="18" rx="2"/><path class="a" d="M24 18l13-8v34l-13-8z"/><circle class="r" cx="16" cy="12" r="4"/>',
+cable:'<circle class="s" cx="22" cy="24" r="18"/><circle class="a" cx="22" cy="24" r="11"/><circle cx="22" cy="24" r="3"/><path d="M33 32c4 4 8 6 12 6"/>',
+conduit:'<rect class="s" x="4" y="13" width="40" height="7" rx="3"/><rect class="s" x="4" y="28" width="40" height="7" rx="3"/>',
+angle:'<path class="s" d="M10 6h8v28h24v8H10z"/>',
+channel:'<path class="s" d="M10 6h28v8H18v20h20v8H10z"/>',
+rod:'<rect class="s" x="5" y="21" width="34" height="6"/><path d="M9 21v6M13 21v6M17 21v6M21 21v6M25 21v6M29 21v6M33 21v6"/><rect class="a" x="38" y="17" width="7" height="14" rx="1"/>',
+clamp:'<path class="s" d="M10 8v18a14 14 0 0 0 28 0V8h-6v18a8 8 0 0 1-16 0V8z"/><path d="M5 8h13M30 8h13"/>',
+anchor:'<rect class="a" x="16" y="4" width="16" height="5"/><path class="s" d="M20 9h8v24l-4 8-4-8z"/><path d="M20 15h8M20 20h8"/>',
+electrode:'<path class="s" d="M6 38l28-28 5 5-28 28z"/><path class="a" d="M30 14l5-5 5 5-5 5z"/><path d="M12 40l26-26" />',
+disc:'<circle class="s" cx="24" cy="24" r="18"/><circle class="a" cx="24" cy="24" r="5"/><path d="M24 6v5M24 37v5"/>',
+wheel:'<circle class="a" cx="24" cy="24" r="18"/><circle class="s" cx="24" cy="24" r="11"/><circle class="w" cx="24" cy="24" r="4"/>',
+paint:'<path d="M8 15C8 4 40 4 40 15"/><path class="s" d="M10 13h28v27a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4z"/><ellipse class="s" cx="24" cy="13" rx="14" ry="4"/><rect class="r" x="10" y="22" width="28" height="11"/>',
+primer:'<path d="M8 15C8 4 40 4 40 15"/><path class="s" d="M10 13h28v27a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4z"/><ellipse class="s" cx="24" cy="13" rx="14" ry="4"/><rect class="a" x="10" y="22" width="28" height="11"/>',
+bottle:'<path class="s" d="M19 4h10v6l5 6v28H14V16l5-6z"/><rect class="a" x="14" y="22" width="20" height="12"/>',
+tape:'<circle class="a" cx="21" cy="24" r="16"/><circle class="w" cx="21" cy="24" r="8"/><path class="s" d="M37 24h8v7h-8z"/>',
+teflon:'<circle class="s" cx="22" cy="24" r="13"/><circle class="w" cx="22" cy="24" r="5"/><path d="M35 24h9"/>',
+gasket:'<circle class="a" cx="24" cy="24" r="18"/><circle class="w" cx="24" cy="24" r="10"/>',
+bolt:'<path class="s" d="M16 4h16l4 6-4 6H16l-4-6z"/><rect class="s" x="20" y="16" width="8" height="27"/><path d="M20 22h8M20 27h8M20 32h8M20 37h8"/>',
+cyl:'<rect class="a" x="14" y="12" width="20" height="32" rx="8"/><rect class="s" x="20" y="4" width="8" height="8"/><path d="M28 7h7"/>',
+cylo:'<rect class="s" x="14" y="12" width="20" height="32" rx="8"/><rect class="a" x="20" y="4" width="8" height="8"/><path d="M28 7h7"/>',
+cotton:'<path class="s" d="M7 33c0-8 6-10 10-8 1-6 9-8 12-3 4-3 11 0 11 6 4 2 3 10-2 10H11c-3 0-4-2-4-5z"/>',
+blade:'<rect class="s" x="4" y="19" width="40" height="8" rx="1"/><path d="M8 27l2 3 2-3 2 3 2-3 2 3 2-3 2 3 2-3 2 3 2-3 2 3 2-3 2 3 2-3 2 3 2-3"/><circle cx="7.5" cy="23" r="1.5"/><circle cx="40.5" cy="23" r="1.5"/>',
+drillbit:'<rect class="s" x="4" y="21" width="16" height="6"/><path class="a" d="M20 19h18l7 5-7 5H20z"/><path d="M25 19l4 10M31 19l4 10"/>',
+grinder:'<rect class="s" x="3" y="15" width="25" height="11" rx="5.5"/><rect class="a" x="26" y="13" width="11" height="13" rx="2"/><path d="M31.5 26v4M13 15v-4"/><ellipse class="s" cx="31.5" cy="33" rx="13" ry="3.2"/>',
+drill:'<path class="s" d="M6 12h24a4 4 0 0 1 4 4v4a4 4 0 0 1-4 4H21l-2 16h-8l2-16H6z"/><path class="a" d="M34 15h5v6h-5z"/><path d="M39 18h7"/>',
+hdrill:'<path class="s" d="M4 12h26a4 4 0 0 1 4 4v4a4 4 0 0 1-4 4H19l-2 16H9l2-16H4z"/><path class="a" d="M34 15h5v6h-5z"/><path d="M39 18h7M26 24v12h-5"/>',
+chopsaw:'<rect class="s" x="5" y="37" width="38" height="6" rx="1"/><circle class="a" cx="21" cy="22" r="12"/><circle cx="21" cy="22" r="2"/><path d="M31 15l11-8M34 37v-9"/>',
+wrench:'<path class="s" d="M7 39l22-22 5 5-22 22z"/><path class="a" d="M27 10h14v7l-6 4-8-4z"/><path d="M29 21l10-4"/>',
+vice:'<rect class="s" x="5" y="37" width="38" height="6"/><path class="s" d="M11 37V15h8v22zM29 37V15h8v22z"/><circle class="a" cx="24" cy="25" r="5"/><path d="M3 25h42"/>',
+level:'<rect class="s" x="3" y="18" width="42" height="12" rx="2"/><rect class="a" x="18" y="21" width="12" height="6" rx="3"/><circle cx="24" cy="24" r="1.4"/>',
+measure:'<rect class="a" x="5" y="11" width="27" height="27" rx="6"/><circle class="w" cx="18.5" cy="24.5" r="6"/><path class="s" d="M32 31h13v7H32z"/><path d="M36 31v3M40 31v3"/>',
+torch:'<rect class="s" x="3" y="22" width="20" height="8" rx="2"/><path d="M23 24h10l6-7M23 28h11"/><path class="r" d="M38 17l4-5 3 2-4 5z"/><path d="M8 30v7M14 30v9"/>',
+hacksaw:'<path d="M9 14v18M9 14h31v18"/><path class="s" d="M9 30h31v4H9z"/><path class="a" d="M40 22h6v14h-6z"/>',
+spanner:'<path class="s" d="M12 34l16-16 4 4-16 16z"/><path class="a" d="M27 9a8 8 0 0 0 11 11l-3-6-2-2zM5 31a7 7 0 0 0 11 11l-2-5-4-4z"/>',
+hammer:'<path class="s" d="M21 18h6v26h-6z"/><path class="a" d="M8 6h30v12H8z"/>',
+harness:'<circle class="s" cx="24" cy="8" r="4"/><path class="s" d="M14 15h20l-3 15h-4l-1 14h-4l-1-14h-4z"/><path d="M17 15l13 15M31 15L18 30"/><circle class="r" cx="24" cy="22" r="2.4"/>',
+helmet:'<path class="s" d="M10 8h28v20a14 14 0 0 1-28 0z"/><rect class="a" x="16" y="15" width="16" height="7" rx="1"/>',
+ladder:'<path d="M14 4v40M34 4v40M14 10h20M14 18h20M14 26h20M14 34h20M14 42h20"/>',
+chainblock:'<path d="M24 2v6"/><rect class="s" x="13" y="8" width="22" height="14" rx="2"/><path d="M19 22v12M29 22v8"/><path class="a" d="M14 34h10l-5 9z"/>',
+welder:'<rect class="s" x="5" y="11" width="30" height="25" rx="2"/><circle class="a" cx="14" cy="21" r="4"/><path d="M23 19h8M23 25h8M35 29c6 0 9 4 9 11M9 36v4M31 36v4"/>',
+threader:'<rect class="s" x="4" y="27" width="40" height="9" rx="1"/><path d="M8 36v6M40 36v6"/><rect class="a" x="8" y="13" width="13" height="14"/><rect class="w" x="27" y="15" width="11" height="12"/><path d="M2 20h44"/>',
+bender:'<rect class="s" x="5" y="37" width="38" height="5"/><circle class="a" cx="25" cy="24" r="10"/><path d="M6 11c9 0 16 5 19 13" style="stroke-width:4"/><path d="M25 34v3"/>',
+groover:'<rect class="s" x="5" y="30" width="38" height="8"/><circle class="a" cx="18" cy="19" r="6"/><circle class="a" cx="30" cy="19" r="6"/><path d="M2 19h44M10 38v5M38 38v5"/>',
+testpump:'<rect class="s" x="5" y="22" width="27" height="18" rx="2"/><path d="M14 22V11M7 11h20"/><circle class="w" cx="38" cy="14" r="6"/><path d="M38 20v10h-6"/>',
+scaffold:'<path d="M10 4v36M38 4v36M10 12h28M10 28h28M10 12l28 16M38 12L10 28"/><path class="s" d="M6 40h36v4H6z"/>',
+dg:'<rect class="s" x="3" y="13" width="42" height="25" rx="2"/><path d="M9 19h13M9 25h13M9 31h13"/><rect class="a" x="28" y="19" width="11" height="11" rx="1"/><path d="M8 38v4M40 38v4"/>',
+compressor:'<rect class="a" x="5" y="21" width="34" height="14" rx="7"/><rect class="s" x="12" y="9" width="14" height="12"/><circle class="w" cx="12" cy="40" r="3"/><circle class="w" cx="32" cy="40" r="3"/><path d="M39 28h6"/>',
+lift:'<rect class="s" x="8" y="5" width="32" height="6"/><path d="M12 11l24 10M36 11L12 21M12 21l24 10M36 21L12 31"/><rect class="a" x="6" y="31" width="36" height="6" rx="1"/><circle class="w" cx="12" cy="41" r="2.6"/><circle class="w" cx="36" cy="41" r="2.6"/>',
+box:'<path class="s" d="M6 14l18-8 18 8v20l-18 8-18-8z"/><path d="M6 14l18 8 18-8M24 22v20"/>'
+};
+function svgIcon(k,sz){return '<svg class="ico" viewBox="0 0 48 48" width="'+(sz||40)+'" height="'+(sz||40)+'" aria-hidden="true">'+(ICONS[k]||ICONS.box)+'</svg>';}
+
+var NB=['15 NB','20 NB','25 NB','32 NB','40 NB','50 NB','65 NB','80 NB','100 NB','125 NB','150 NB'],NBL=['50 NB','65 NB','80 NB','100 NB','125 NB','150 NB','200 NB'],NBS=['15 NB','20 NB','25 NB','32 NB','40 NB','50 NB'];
+var CGRP={pipe:'Pipes',fit:'Fittings',valve:'Valves',spr:'Sprinklers & hydrants',pump:'Pumps & panels',fa:'Fire alarm',sup:'Supports & steel',cons:'Consumables',power:'Power tools',hand:'Hand tools',mach:'Machines',access:'Lifting, access & safety'};
+/* t: core | cons | tool | machine;  g: group;  u: unit;  i: image;  z: sizes */
+var CATALOG=[
+ {id:'ms',g:'pipe',t:'core',n:'MS ERW pipe, heavy (IS 1239)',u:'Mtr',i:'pipe',z:NB},
+ {id:'gi',g:'pipe',t:'core',n:'GI pipe, heavy (IS 1239)',u:'Mtr',i:'pipe',z:NB},
+ {id:'msl',g:'pipe',t:'core',n:'MS pipe, large bore (IS 3589)',u:'Mtr',i:'pipe',z:['200 NB','250 NB','300 NB']},
+ {id:'elb',g:'fit',t:'core',n:'Elbow 90°',u:'Nos',i:'elbow',z:NB},
+ {id:'tee',g:'fit',t:'core',n:'Equal tee',u:'Nos',i:'tee',z:NB},
+ {id:'red',g:'fit',t:'core',n:'Reducer',u:'Nos',i:'reducer'},
+ {id:'flg',g:'fit',t:'core',n:'Slip-on flange (ASA 150)',u:'Nos',i:'flange',z:NBL},
+ {id:'sock',g:'fit',t:'core',n:'Socket / coupling',u:'Nos',i:'coupling',z:NBS},
+ {id:'grv',g:'fit',t:'core',n:'Grooved coupling',u:'Nos',i:'groove',z:NBL},
+ {id:'gv',g:'valve',t:'core',n:'Gate valve',u:'Nos',i:'gate',z:NBL},
+ {id:'bv',g:'valve',t:'core',n:'Butterfly valve',u:'Nos',i:'bfly',z:NBL},
+ {id:'nrv',g:'valve',t:'core',n:'Non-return valve',u:'Nos',i:'nrv',z:NBL},
+ {id:'blv',g:'valve',t:'core',n:'Ball valve',u:'Nos',i:'ball',z:NBS},
+ {id:'icv',g:'valve',t:'core',n:'Alarm valve (installation control valve)',u:'Nos',i:'alarmv',z:['100 NB','150 NB']},
+ {id:'fsw',g:'valve',t:'core',n:'Flow switch',u:'Nos',i:'flowsw',z:NBL},
+ {id:'spp',g:'spr',t:'core',n:'Sprinkler, pendent 68°C',u:'Nos',i:'sprinkler'},
+ {id:'spu',g:'spr',t:'core',n:'Sprinkler, upright 68°C',u:'Nos',i:'sprinkler'},
+ {id:'sps',g:'spr',t:'core',n:'Sprinkler, sidewall 68°C',u:'Nos',i:'sprinkler'},
+ {id:'lv',g:'spr',t:'core',n:'Landing valve (hydrant valve)',u:'Nos',i:'hydrant'},
+ {id:'hr',g:'spr',t:'core',n:'Hose reel drum with 30 m hose',u:'Nos',i:'hosereel'},
+ {id:'rrl',g:'spr',t:'core',n:'RRL hose 63 mm × 15 m',u:'Nos',i:'hose'},
+ {id:'bp',g:'spr',t:'core',n:'Branch pipe with nozzle',u:'Nos',i:'nozzle'},
+ {id:'hcb',g:'spr',t:'core',n:'Hose cabinet',u:'Nos',i:'cabinet'},
+ {id:'fbi',g:'spr',t:'core',n:'Fire brigade inlet, 4-way',u:'Nos',i:'inlet'},
+ {id:'mp',g:'pump',t:'core',n:'Main fire pump (electric)',u:'Nos',i:'pump'},
+ {id:'dp',g:'pump',t:'core',n:'Diesel engine fire pump',u:'Nos',i:'dpump'},
+ {id:'jp',g:'pump',t:'core',n:'Jockey pump',u:'Nos',i:'pump'},
+ {id:'pcp',g:'pump',t:'core',n:'Pump control panel',u:'Nos',i:'panel'},
+ {id:'psw',g:'pump',t:'core',n:'Pressure switch',u:'Nos',i:'pswitch'},
+ {id:'pg',g:'pump',t:'core',n:'Pressure gauge',u:'Nos',i:'gauge'},
+ {id:'fap',g:'fa',t:'core',n:'Fire alarm control panel',u:'Nos',i:'facp'},
+ {id:'sd',g:'fa',t:'core',n:'Smoke detector',u:'Nos',i:'smoke'},
+ {id:'hd',g:'fa',t:'core',n:'Heat detector',u:'Nos',i:'heat'},
+ {id:'mcp',g:'fa',t:'core',n:'Manual call point',u:'Nos',i:'mcp'},
+ {id:'hoo',g:'fa',t:'core',n:'Hooter with strobe',u:'Nos',i:'hooter'},
+ {id:'fsc',g:'fa',t:'core',n:'Fire survival cable 2C × 1.5 sq mm',u:'Mtr',i:'cable'},
+ {id:'cnd',g:'fa',t:'core',n:'Conduit 20 mm',u:'Mtr',i:'conduit'},
+ {id:'ang',g:'sup',t:'core',n:'MS angle 50 × 50 × 5',u:'Kg',i:'angle'},
+ {id:'chn',g:'sup',t:'core',n:'MS channel ISMC 75',u:'Kg',i:'channel'},
+ {id:'thr',g:'sup',t:'core',n:'Threaded rod',u:'Nos',i:'rod',z:['M10','M12']},
+ {id:'clp',g:'sup',t:'core',n:'U-clamp / pipe clamp',u:'Nos',i:'clamp',z:NB},
+ {id:'anc',g:'sup',t:'core',n:'Anchor fastener',u:'Nos',i:'anchor',z:['M10','M12']},
+ {id:'ele',g:'cons',t:'cons',n:'Welding electrode E6013',u:'Kg',i:'electrode',z:['2.5 mm','3.15 mm','4 mm']},
+ {id:'cut',g:'cons',t:'cons',n:'Cutting disc',u:'Nos',i:'disc',z:['4 in','14 in']},
+ {id:'grw',g:'cons',t:'cons',n:'Grinding wheel 4 in',u:'Nos',i:'wheel'},
+ {id:'pri',g:'cons',t:'cons',n:'Red oxide primer',u:'Ltr',i:'primer'},
+ {id:'pnt',g:'cons',t:'cons',n:'Fire red enamel paint',u:'Ltr',i:'paint'},
+ {id:'thn',g:'cons',t:'cons',n:'Thinner',u:'Ltr',i:'bottle'},
+ {id:'wrp',g:'cons',t:'cons',n:'Pipe wrapping and coating tape',u:'Nos',i:'tape'},
+ {id:'tef',g:'cons',t:'cons',n:'Teflon tape',u:'Nos',i:'teflon'},
+ {id:'gsk',g:'cons',t:'cons',n:'Rubber gasket',u:'Nos',i:'gasket',z:NBL},
+ {id:'nb',g:'cons',t:'cons',n:'Nut-bolt with washers',u:'Set',i:'bolt'},
+ {id:'o2',g:'cons',t:'cons',n:'Oxygen cylinder',u:'Nos',i:'cylo'},
+ {id:'da',g:'cons',t:'cons',n:'DA (acetylene) cylinder',u:'Nos',i:'cyl'},
+ {id:'ctw',g:'cons',t:'cons',n:'Cotton waste',u:'Kg',i:'cotton'},
+ {id:'hsb',g:'cons',t:'cons',n:'Hacksaw blade',u:'Nos',i:'blade'},
+ {id:'dbt',g:'cons',t:'cons',n:'Drill bit',u:'Nos',i:'drillbit',z:['8 mm','10 mm','12 mm','14 mm']},
+ {id:'ag4',g:'power',t:'tool',n:'Angle grinder 4 in',u:'Nos',i:'grinder'},
+ {id:'ag7',g:'power',t:'tool',n:'Angle grinder 7 in',u:'Nos',i:'grinder'},
+ {id:'drl',g:'power',t:'tool',n:'Drill machine',u:'Nos',i:'drill'},
+ {id:'rh',g:'power',t:'tool',n:'Rotary hammer drill',u:'Nos',i:'hdrill'},
+ {id:'chs',g:'power',t:'tool',n:'Chop saw 14 in',u:'Nos',i:'chopsaw'},
+ {id:'pw',g:'hand',t:'tool',n:'Pipe wrench',u:'Nos',i:'wrench'},
+ {id:'pv',g:'hand',t:'tool',n:'Pipe vice',u:'Nos',i:'vice'},
+ {id:'sl',g:'hand',t:'tool',n:'Spirit level',u:'Nos',i:'level'},
+ {id:'mt',g:'hand',t:'tool',n:'Measuring tape',u:'Nos',i:'measure'},
+ {id:'gcs',g:'hand',t:'tool',n:'Gas cutting set',u:'Nos',i:'torch'},
+ {id:'hsf',g:'hand',t:'tool',n:'Hacksaw frame',u:'Nos',i:'hacksaw'},
+ {id:'sps2',g:'hand',t:'tool',n:'Spanner set',u:'Nos',i:'spanner'},
+ {id:'ham',g:'hand',t:'tool',n:'Hammer',u:'Nos',i:'hammer'},
+ {id:'wm',g:'mach',t:'machine',n:'Welding machine',u:'Nos',i:'welder'},
+ {id:'ptm',g:'mach',t:'machine',n:'Pipe threading machine',u:'Nos',i:'threader'},
+ {id:'pbm',g:'mach',t:'machine',n:'Pipe bending machine',u:'Nos',i:'bender'},
+ {id:'rgm',g:'mach',t:'machine',n:'Roll grooving machine',u:'Nos',i:'groover'},
+ {id:'htp',g:'mach',t:'machine',n:'Hydraulic test pump',u:'Nos',i:'testpump'},
+ {id:'dgs',g:'mach',t:'machine',n:'Diesel generator (DG set)',u:'Nos',i:'dg'},
+ {id:'cmp',g:'mach',t:'machine',n:'Air compressor',u:'Nos',i:'compressor'},
+ {id:'cb',g:'access',t:'tool',n:'Chain pulley block',u:'Nos',i:'chainblock'},
+ {id:'lad',g:'access',t:'tool',n:'Aluminium ladder',u:'Nos',i:'ladder'},
+ {id:'scf',g:'access',t:'machine',n:'Scaffolding / mobile tower',u:'Set',i:'scaffold'},
+ {id:'scl',g:'access',t:'machine',n:'Scissor lift',u:'Nos',i:'lift'},
+ {id:'hns',g:'access',t:'tool',n:'Full-body safety harness',u:'Nos',i:'harness'},
+ {id:'whs',g:'access',t:'tool',n:'Welding face shield',u:'Nos',i:'helmet'}
+];
+var GUESS=[[/welding rod|electrode/,'electrode'],[/elbow|bend\b/,'elbow'],[/\btee\b/,'tee'],[/reducer/,'reducer'],[/flange/,'flange'],[/groov/,'groove'],[/socket|coupling/,'coupling'],[/butterfly/,'bfly'],[/non.?return|nrv|check valve/,'nrv'],[/ball valve/,'ball'],[/alarm valve|control valve/,'alarmv'],[/gate valve|valve/,'gate'],[/flow switch/,'flowsw'],[/sprinkler/,'sprinkler'],[/landing|hydrant/,'hydrant'],[/hose reel/,'hosereel'],[/hose/,'hose'],[/branch|nozzle/,'nozzle'],[/cabinet/,'cabinet'],[/inlet/,'inlet'],[/diesel.*pump/,'dpump'],[/panel/,'panel'],[/pump/,'pump'],[/gauge/,'gauge'],[/pressure switch/,'pswitch'],[/smoke/,'smoke'],[/heat/,'heat'],[/call point|mcp/,'mcp'],[/hooter|sounder/,'hooter'],[/cable/,'cable'],[/conduit/,'conduit'],[/angle/,'angle'],[/channel/,'channel'],[/rod/,'rod'],[/clamp/,'clamp'],[/anchor|fastener/,'anchor'],[/electrode/,'electrode'],[/cutting disc|disc/,'disc'],[/grinding wheel/,'wheel'],[/primer/,'primer'],[/paint|enamel/,'paint'],[/thinner/,'bottle'],[/tape|wrapping/,'tape'],[/teflon/,'teflon'],[/gasket/,'gasket'],[/bolt|nut/,'bolt'],[/oxygen/,'cylo'],[/cylinder|acetylene/,'cyl'],[/cotton/,'cotton'],[/hacksaw blade/,'blade'],[/drill bit/,'drillbit'],[/grinder/,'grinder'],[/hammer drill|rotary/,'hdrill'],[/drill/,'drill'],[/chop saw|cut.?off/,'chopsaw'],[/wrench/,'wrench'],[/vice/,'vice'],[/level/,'level'],[/measuring/,'measure'],[/gas cutting|torch/,'torch'],[/hacksaw/,'hacksaw'],[/spanner/,'spanner'],[/hammer/,'hammer'],[/harness/,'harness'],[/shield|helmet/,'helmet'],[/ladder/,'ladder'],[/chain/,'chainblock'],[/welding machine|welder/,'welder'],[/thread/,'threader'],[/bending/,'bender'],[/test pump/,'testpump'],[/scaffold|tower/,'scaffold'],[/generator|dg\b/,'dg'],[/compressor/,'compressor'],[/lift/,'lift'],[/pipe/,'pipe']];
+function iconFor(x){if(x.icon&&ICONS[x.icon])return x.icon;var s=lc(x.name);for(var i=0;i<GUESS.length;i++)if(GUESS[i][0].test(s))return GUESS[i][1];return 'box';}
+function thumb(x,sz){sz=sz||40;return '<span class="thumb" style="width:'+sz+'px;height:'+sz+'px">'+(x.photo?'<img src="'+esc(x.photo)+'" alt="">':svgIcon(iconFor(x),sz-6))+'</span>';}
+
+function catalogSheet(kind){
+  var list=CATALOG.filter(function(c){return kind==='mat'?(c.t==='core'||c.t==='cons'):(c.t==='tool'||c.t==='machine');});
+  var have={};(kind==='mat'?S.mats:S.tools).forEach(function(x){have[lc(x.name)]=x;});
+  var groups=[];list.forEach(function(c){if(groups.indexOf(c.g)<0)groups.push(c.g);});
+  var sel={},open={},grp='all',q='';
+  function nameOf2(c,z){return c.n+(z?' '+z:'');}
+  function line(c,z){
+    var nm=nameOf2(c,z),ex=have[lc(nm)],k=c.id+'|'+(z||'');
+    if(ex)return '<div class="cl"><span class="cz">'+esc(z||'')+'</span><span class="small muted" style="flex:1">In stores'+(kind==='mat'?': '+fq(ex.stock)+' '+esc(ex.unit||''):'')+'</span></div>';
+    return '<label class="cl"><span class="cz">'+esc(z||(kind==='mat'?'Qty on site':'How many'))+'</span><input class="cq" type="number" min="0" step="any" inputmode="decimal" data-k="'+esc(k)+'" value="'+esc(sel[k]==null?'':sel[k])+'" placeholder="—" aria-label="'+esc(nm)+' quantity"><span class="small muted">'+esc(c.u)+'</span></label>';
+  }
+  function count(){return Object.keys(sel).filter(function(k){return sel[k]!==''&&sel[k]!=null;}).length;}
+  function draw(){
+    var ql=lc(q),rows=list.filter(function(c){return (grp==='all'||c.g===grp)&&(!ql||lc(c.n).indexOf(ql)>=0);});
+    var h='';
+    rows.forEach(function(c,i){
+      if(i===0||rows[i-1].g!==c.g)h+='<h2 style="margin-top:6px">'+esc(CGRP[c.g])+'</h2>';
+      var picked=c.z?c.z.filter(function(z){var v=sel[c.id+'|'+z];return v!==''&&v!=null;}).length:0;
+      h+='<div class="ci">'+thumb({icon:c.i},52)+'<div class="cm"><div class="t">'+esc(c.n)+'</div>';
+      if(c.z){
+        h+='<button type="button" class="btn sm" data-open="'+c.id+'" aria-expanded="'+(!!open[c.id])+'">'+(open[c.id]?'Hide sizes':'Choose sizes')+(picked?' · '+picked+' picked':'')+'</button>';
+        if(open[c.id])h+='<div class="cls">'+c.z.map(function(z){return line(c,z);}).join('')+'</div>';
+      }else h+=line(c,'');
+      h+='</div></div>';
+    });
+    if(!rows.length)h='<div class="empty">Nothing matches. Add it with “Add '+(kind==='mat'?'material':'tool or machine')+'” instead.</div>';
+    $('#catList').innerHTML=h;
+    var c=count(),bt=$('#catAdd');bt.disabled=!c;bt.textContent=c?'Add '+c+' item'+(c>1?'s':'')+' to stores':'Enter quantities for items on site';
+  }
+  sheet(kind==='mat'?'Material catalogue':'Tools and machines catalogue',
+    '<div id="catW" style="display:flex;flex-direction:column;gap:12px"><div class="small muted">Enter the quantity for each item that is on site. Leave the rest blank; they won’t be added.'+(kind==='mat'?' A zero adds the item with no stock yet.':'')+'</div>'+
+    '<input class="in" type="search" id="catQ" placeholder="Search the catalogue" aria-label="Search the catalogue">'+
+    '<div class="chips">'+['all'].concat(groups).map(function(g){return '<button type="button" class="chip'+(g==='all'?' on':'')+'" data-g="'+g+'">'+esc(g==='all'?'All':CGRP[g])+'</button>';}).join('')+'</div>'+
+    '<div id="catList" class="catl"></div><div class="catf"><button class="btn pri wide" type="button" id="catAdd" disabled>Enter quantities for items on site</button></div></div>',
+  function(b0){
+    var b=$('#catW',b0);draw();
+    b.oninput=function(e){
+      if(e.target.id==='catQ'){q=e.target.value;draw();return;}
+      var k=e.target.getAttribute('data-k');if(k==null)return;sel[k]=e.target.value;
+      var c=count(),bt=$('#catAdd');bt.disabled=!c;bt.textContent=c?'Add '+c+' item'+(c>1?'s':'')+' to stores':'Enter quantities for items on site';
+    };
+    b.onclick=function(e){
+      var o=e.target.closest('[data-open]');if(o){var id=o.getAttribute('data-open');open[id]=!open[id];draw();return;}
+      var g=e.target.closest('[data-g]');if(g){grp=g.getAttribute('data-g');$$('[data-g]',b).forEach(function(x){x.classList.toggle('on',x===g);});draw();return;}
+      if(e.target.id==='catAdd'){
+        var tasks=[],added=0;
+        Object.keys(sel).forEach(function(k){
+          var v=sel[k];if(v===''||v==null)return;var qn=Math.max(0,n(v)),p=k.split('|'),c=list.filter(function(x){return x.id===p[0];})[0];if(!c)return;
+          var nm=nameOf2(c,p[1]);if(have[lc(nm)])return;
+          if(kind==='mat'){
+            var id=uid(),d={name:nm,cat:c.t==='cons'?'cons':'core',unit:c.u,stock:qn,min:'',boq:'',received:qn,issued:0,icon:c.i};
+            tasks.push(function(){return col('mats').doc(id).set(d).then(function(){if(qn)return col('mtx').doc(uid()).set(stamp({mat:id,name:nm,unit:c.u,type:'in',qty:qn,date:today(),ref:'Opening stock',note:'From catalogue'}));});});
+          }else{
+            if(!qn)return;
+            var t={name:nm,kind:c.t,code:'',qty:Math.max(1,Math.round(qn)),own:'own',cond:'Good',status:'available',icon:c.i};
+            tasks.push(function(){return col('tools').doc(uid()).set(t);});
+          }
+          added++;
+        });
+        if(!added){toast(kind==='mat'?'Nothing new to add.':'Enter how many of each tool is on site.');return;}
+        e.target.disabled=true;e.target.textContent='Adding…';
+        inChunks(tasks).then(function(){closeSheet();toast(added+' item'+(added>1?'s':'')+' added to stores');},function(err){fail(err);e.target.disabled=false;draw();});
+      }
+    };
+  });
+}
+
+/* photos: resized on the phone so each stays small */
+function resizeImg(file,cb){
+  var fr=new FileReader();
+  fr.onload=function(){var im=new Image();im.onload=function(){
+    function go(max,qual){var s=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',qual);}
+    var d=go(320,0.72);if(d.length>90000)d=go(220,0.6);cb(d);
+  };im.onerror=function(){toast('That file isn’t a picture this device can read.');};im.src=fr.result;};
+  fr.readAsDataURL(file);
+}
+function photoRow(x,coll){
+  return '<div class="row" style="align-items:center"><span id="ph-prev">'+thumb(x,64)+'</span><label class="btn sm">'+(x.photo?'Change photo':'Add photo')+'<input type="file" accept="image/*" id="ph-in" hidden></label>'+(x.photo?'<button type="button" class="btn sm" id="ph-rm">Use drawing</button>':'')+'</div>';
+}
+function bindPhoto(x,coll,redraw){
+  var inp=$('#ph-in');if(inp)inp.onchange=function(){var f=inp.files&&inp.files[0];if(!f)return;resizeImg(f,function(d){col(coll).doc(x.id).update({photo:d}).then(function(){x.photo=d;toast('Photo saved');redraw();},fail);});};
+  var rm=$('#ph-rm');if(rm)rm.onclick=function(){col(coll).doc(x.id).update({photo:''}).then(function(){x.photo='';redraw();},fail);};
+}
+
+/* ---------- work activities for the daily report ---------- */
+var ACTS=[['paint','Painting of pipes','Mtr',1],['weld','Welding of pipes','Mtr',1],['bend','Bending of pipes','Nos',1],['supp','Fabrication of supports','Nos',0],
+  ['erect','Erection of pipes','Mtr',1],['wrap','Wrapping and coating of pipes','Mtr',1],['fit','Installation of fittings and valves','Nos',1],['pump','Installation of pumps','Nos',0],
+  ['panel','Installation of pump panels','Nos',0],['spr','Erection of sprinklers','Nos',0],['fa','Fire alarm system installation','Nos',0],['other','Other work','',0]];
+var ACTMAP={};ACTS.forEach(function(a){ACTMAP[a[0]]={k:a[0],l:a[1],u:a[2],sz:!!a[3]};});
+function actLabel(w){
+  var a=w.act&&w.act!=='other'?ACTMAP[w.act]:null;
+  if(!a)return w.text||'';
+  return a.l+(w.size?' '+w.size:'')+(w.text?' – '+w.text:'');
+}
+function guessAct(t){
+  var s=lc(t),R=[[/paint/,'paint'],[/weld/,'weld'],[/bend/,'bend'],[/support/,'supp'],[/wrap|coat/,'wrap'],[/pump panel|panel/,'panel'],[/pump/,'pump'],[/sprinkler/,'spr'],[/alarm|detector|call point|hooter/,'fa'],[/valve|fitting/,'fit'],[/erect|lay|laying|pipe/,'erect']];
+  for(var i=0;i<R.length;i++)if(R[i][0].test(s))return R[i][1];
+  return '';
+}
+function workTotals(){
+  var m=monthOf(today()),T={};
+  Object.keys(S.dpr).forEach(function(k){(S.dpr[k].work||[]).forEach(function(w){
+    if(!w.act||w.act==='other'||w.qty===''||w.qty==null)return;
+    var key=w.act+'|'+(w.unit||'');var t=T[key]||(T[key]={act:w.act,unit:w.unit||'',all:0,mon:0,last:''});
+    t.all+=n(w.qty);if(k.slice(0,7)===m)t.mon+=n(w.qty);if(k>t.last)t.last=k;
+  });});
+  return ACTS.map(function(a){return Object.keys(T).filter(function(k){return T[k].act===a[0];}).map(function(k){return T[k];});}).reduce(function(x,y){return x.concat(y);},[]);
+}
+function workTotalsCard(){
+  var R=workTotals();
+  var h='<section class="card flush"><div class="ch"><h2>Work done to date</h2><span class="small muted">From daily reports</span></div>';
+  if(!R.length)return h+'<div class="empty">Choose an activity on each work line of the daily report, and totals build up here.</div></section>';
+  return h+'<div class="tw" style="border:0;border-radius:0"><table class="tb"><thead><tr><th>Activity</th><th class="n">'+MON[new Date().getMonth()]+'</th><th class="n">To date</th></tr></thead><tbody>'+
+    R.map(function(r){return '<tr><td style="white-space:normal">'+esc(ACTMAP[r.act].l)+'</td><td class="n">'+(r.mon?fq(r.mon)+' '+esc(r.unit):'–')+'</td><td class="n"><b>'+fq(r.all)+'</b> '+esc(r.unit)+'</td></tr>';}).join('')+'</tbody></table></div></section>';
+}
+
 /* ---------- downloads ---------- */
 function csv(rows){return '﻿'+rows.map(function(r){return r.map(function(v){v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(',');}).join('\r\n');}
 function safe(s){return String(s||'').replace(/[\\/:*?"<>|]+/g,' ').trim();}
@@ -1215,7 +1712,7 @@ function exportSummary(){
   var p=proj(),rows=[['Project',p.name],['Client',p.client||''],['Site',p.site||''],['Overall progress %',overall(p)],['Time used %',timePct(p)==null?'':timePct(p)],[''],['Stage','Weight','% done','Last updated']];
   (p.stages||[]).forEach(function(s){rows.push([s.name,s.weight,s.pct,s.updated||'']);});
   rows.push([''],['Daily reports','Manpower','Work items','Hindrances']);
-  Object.keys(S.dpr).sort().reverse().forEach(function(k){var r=S.dpr[k];rows.push([k,r.manpower,(r.work||[]).map(function(w){return w.text+(w.qty!==''&&w.qty!=null?' ('+w.qty+' '+(w.unit||'')+')':'');}).join('; '),r.hindrance||'']);});
+  Object.keys(S.dpr).sort().reverse().forEach(function(k){var r=S.dpr[k];rows.push([k,r.manpower,(r.work||[]).map(function(w){return actLabel(w)+(w.qty!==''&&w.qty!=null?' ('+w.qty+' '+(w.unit||'')+')':'');}).join('; '),r.hindrance||'']);});
   dl('Progress summary '+safe(p.name)+' '+today()+'.csv',csv(rows));
 }
 
@@ -1258,6 +1755,13 @@ $('#view').addEventListener('click',function(e){
   else if(a==='exportTools')exportTools();
   else if(a==='exportSummary')exportSummary();
   else if(a==='bulk')bulkSheet();
+  else if(a==='atab'){S.attTab=b.getAttribute('data-v');render();window.scrollTo(0,0);}
+  else if(a==='editPay')paySheet(S.workers.filter(function(w){return w.id===b.getAttribute('data-id');})[0]);
+  else if(a==='payCfg')payCfgSheet();
+  else if(a==='exportSal')exportSal();
+  else if(a==='catMat')catalogSheet('mat');
+  else if(a==='catTool')catalogSheet('tool');
+  else if(a==='delAdv'){var aid=b.getAttribute('data-id');confirmBtn(b,'Delete?',function(){col('adv').doc(aid).delete().then(function(){toast('Advance deleted');},fail);});}
 });
 $('#view').addEventListener('click',function(e){
   var b=e.target.closest('[data-act="openMat"],[data-act="openTool"]');if(!b)return;
@@ -1272,6 +1776,10 @@ $('#view').addEventListener('change',function(e){
 });
 $('#view').addEventListener('input',function(e){if(e.target.id==='storeQ'){S.q=e.target.value;drawStoreList();}});
 $('#view').addEventListener('submit',function(e){
+  if(e.target.id==='advForm'){e.preventDefault();
+    var wid=val('av-w'),amt=n(val('av-a'));if(!wid){toast('Choose the worker.');return;}if(amt<=0){toast('Enter the amount.');return;}
+    put('adv',uid(),stamp({wid:wid,amt:amt,date:val('av-d')||S.date,mode:val('av-m'),note:val('av-n')})).then(function(){toast('Advance recorded');$('#av-a').value='';$('#av-n').value='';},function(){});
+    return;}
   if(e.target.id!=='taskForm')return;e.preventDefault();
   var text=val('tf-text');if(!text)return;
   var it={id:uid(),text:text,stage:val('tf-stage'),qty:numv('tf-qty'),unit:val('tf-unit'),who:val('tf-who'),done:false};
