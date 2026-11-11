@@ -43,6 +43,7 @@ jobs:
         run: |
           mkdir -p _site/vendor
           cp index.html shim.js firebase-config.js _site/
+          [ -f photos.tsv ] && cp photos.tsv _site/ || true
           cd "$RUNNER_TEMP"
           npm pack firebase@10.14.1 --silent
           tar -xzf firebase-10.14.1.tgz
@@ -52,6 +53,20 @@ jobs:
           tar -xzf xlsx-0.18.5.tgz
           cp package/dist/xlsx.full.min.js "$GITHUB_WORKSPACE/_site/vendor/"
           ls -la "$GITHUB_WORKSPACE/_site" "$GITHUB_WORKSPACE/_site/vendor"
+
+      - name: Fetch catalogue photos
+        run: |
+          [ -f photos.tsv ] || { echo "No photo list"; exit 0; }
+          set -- _site/img/cat
+          mkdir -p "$1"
+          ok=0; bad=0
+          while IFS=$'\t' read -r id url lic who page; do
+            [ -z "$id" ] && continue
+            ext="${url##*.}"; ext=$(echo "$ext" | tr 'A-Z' 'a-z'); [ "$ext" = "jpeg" ] && ext=jpg
+            if curl -sfL --retry 2 -A "SiteDiaryBuild/1.0 (https://github.com/neotheone9979-dotcom/site-diary-web)" -o "$1/$id.$ext" "$url"; then ok=$((ok+1)); else bad=$((bad+1)); rm -f "$1/$id.$ext"; echo "Could not fetch $id"; fi
+            sleep 0.3
+          done < photos.tsv
+          echo "Photos fetched: $ok, missed: $bad (missed ones show drawings)"
 
       - uses: actions/configure-pages@v5
 
