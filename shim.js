@@ -1,6 +1,7 @@
 /* Site Diary for Android: connects the app to Firebase in place of Claude's shared storage.
    It provides the same window.claude.use('db' | 'user' | 'downloads') calls the app already uses,
    and shows the sign-in screen before the app reaches its data. */
+window.SD_PHOTOS = true;
 (function () {
   var cfg = window.FIREBASE_CONFIG;
   var ready = !!(cfg && cfg.apiKey && cfg.projectId && window.firebase);
