@@ -207,6 +207,32 @@ dialog.sheet::backdrop{background:rgba(8,14,24,.5)}
 .cq{width:88px;flex:0 0 auto;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font:500 14px var(--mono);text-align:right;color:var(--ink)}
 .catf{position:sticky;bottom:0;background:var(--card);padding:10px 0 2px;box-shadow:0 -8px 12px -8px rgba(0,0,0,.15)}
 .seg4 button{font-size:13px;padding:7px 3px;line-height:1.2}
+
+.nav .wrap{grid-template-columns:repeat(6,minmax(0,1fr))}
+.nav button{font-size:10.5px}
+.seg5 button{font-size:12.5px;padding:7px 2px;line-height:1.2}
+.brush{display:flex;flex-wrap:wrap;gap:6px}
+.brush .am{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 10px 5px 5px;cursor:pointer;font:500 12.5px var(--body);color:var(--ink);background:var(--card)}
+.brush .am b{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;border-radius:999px;font:700 11px var(--mono)}
+.brush .am[aria-pressed="true"]{border-color:var(--navy);box-shadow:0 0 0 2px var(--navy) inset}
+.am-P b,.cell.am-P{background:#d9f2e3;color:#14532d}.am-H b,.cell.am-H{background:#fff0c2;color:#713f12}.am-A b,.cell.am-A{background:#f9d3cc;color:#7f1d1d}
+.am-SL b,.cell.am-SL{background:#e9d5ff;color:#4c1d95}.am-L b,.cell.am-L{background:#d6e4f5;color:#1e3a8a}.am-WO b,.cell.am-WO{background:#e5e7eb;color:#374151}.am-PH b,.cell.am-PH{background:#fde2cf;color:#7c2d12}
+.mg{max-height:70vh}
+.tb.grid{border-collapse:separate;border-spacing:0}
+.tb.grid th,.tb.grid td{padding:2px;text-align:center}
+.tb.grid .nm{position:sticky;left:0;z-index:2;background:var(--card);text-align:left;padding:4px 8px;min-width:118px;max-width:150px;white-space:normal;font-size:13px;box-shadow:1px 0 0 var(--line)}
+.tb.grid thead th{position:sticky;top:0;z-index:1;background:var(--card)}
+.tb.grid thead th.nm{z-index:3}
+.tb.grid th.dc button{border:0;background:none;cursor:pointer;font:600 12px var(--mono);color:var(--ink);display:flex;flex-direction:column;align-items:center;width:28px;padding:2px 0}
+.tb.grid th.dc i{font-style:normal;font-weight:500;font-size:10px;color:var(--muted)}
+.tb.grid .sun{background:var(--bg)}
+.tb.grid th.td button{color:var(--flame)}
+.cell{width:28px;height:28px;border:1px solid var(--line);border-radius:6px;background:var(--card);font:700 10px var(--mono);cursor:pointer;padding:0}
+.cell.am-P,.cell.am-H,.cell.am-A,.cell.am-SL,.cell.am-L,.cell.am-WO,.cell.am-PH{border-color:transparent}
+.li .main{min-width:72px}
+.mark button{width:34px}
+.mark+select.lv{flex:0 0 auto;width:66px;padding:6px 2px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font:500 12px var(--body);color:var(--ink)}
+select.lv.on{background:var(--navy);color:var(--card);border-color:var(--navy)}
 </style>
 
 <header class="hdr gut">
@@ -227,6 +253,7 @@ dialog.sheet::backdrop{background:rgba(8,14,24,.5)}
   <button type="button" data-tab="plan"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="17" rx="2"/><path d="M8 2v4M16 2v4"/><path d="M8 12l2 2 4-4"/><path d="M8 17h8"/></svg>Plan</button>
   <button type="button" data-tab="dpr"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h7M9 17h5"/></svg>Daily report</button>
   <button type="button" data-tab="store"><svg viewBox="0 0 24 24"><path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg>Stores</button>
+  <button type="button" data-tab="meas"><svg viewBox="0 0 24 24"><rect x="2.5" y="8" width="19" height="8" rx="1.5"/><path d="M6.5 8v3M10 8v4.5M13.5 8v3M17 8v4.5"/></svg>Measure</button>
 </div></nav>
 
 <dialog class="sheet" id="sheet"><div class="sh-h"><h3 id="shT"></h3><button type="button" class="x" id="shX" aria-label="Close">×</button></div><div class="sh-b" id="shB"></div></dialog>
@@ -247,7 +274,7 @@ var TSTAT={available:['Available','good'],issued:['Issued','flame'],repair:['Und
 var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 var S={db:null,user:null,me:null,dl:null,mode:'connecting',projects:[],pid:null,date:today(),tab:'home',
-  workers:[],adv:[],attTab:'mark',att:{},plans:{},dpr:{},tools:[],mats:[],mtx:[],tlog:[],loaded:{},names:{},planKind:'day',store:'mat',matCat:'all',toolF:'all',q:'',unsub:[]};
+  workers:[],adv:[],subs:[],meas:[],attTab:'mark',att:{},plans:{},dpr:{},tools:[],mats:[],mtx:[],tlog:[],loaded:{},names:{},planKind:'day',store:'mat',matCat:'all',toolF:'all',q:'',unsub:[]};
 try{var sv=JSON.parse(localStorage.getItem('sd-ui')||'{}');if(sv.pid)S.pid=sv.pid;if(sv.tab)S.tab=sv.tab;if(sv.planKind)S.planKind=sv.planKind;if(sv.store)S.store=sv.store;}catch(e){}
 function saveUi(){try{localStorage.setItem('sd-ui',JSON.stringify({pid:S.pid,tab:S.tab,planKind:S.planKind,store:S.store}));}catch(e){}}
 
@@ -301,7 +328,7 @@ function timePct(p){
   return Math.max(0,Math.min(100,Math.round(el/tot*100)));
 }
 function attCount(date){
-  var a=S.att[date],c={P:0,H:0,A:0,ot:0};
+  var a=S.att[date],c={P:0,H:0,A:0,SL:0,L:0,WO:0,PH:0,ot:0};
   if(!a)return null;
   Object.keys(a.marks||{}).forEach(function(k){var v=a.marks[k];if(c[v]!=null)c[v]++;});
   Object.keys(a.ot||{}).forEach(function(k){c.ot+=n(a.ot[k]);});
@@ -342,7 +369,7 @@ function watchProject(){
   if(watching===S.pid)return;
   S.unsub.forEach(function(u){try{u();}catch(e){}});S.unsub=[];
   watching=S.pid;
-  S.workers=[];S.adv=[];S.att={};S.plans={};S.dpr={};S.tools=[];S.mats=[];S.mtx=[];S.tlog=[];S.loaded={};
+  S.workers=[];S.adv=[];S.subs=[];S.meas=[];S.att={};S.plans={};S.dpr={};S.tools=[];S.mats=[];S.mtx=[];S.tlog=[];S.loaded={};
   if(!S.pid)return;
   function sub(name,q,fn){
     S.unsub.push(q.onSnapshot(function(snap){
@@ -353,7 +380,9 @@ function watchProject(){
   function byId(rows){var m={};rows.forEach(function(r){m[r.id]=r;});return m;}
   sub('workers',col('workers').limit(500),function(r){S.workers=r;});
   sub('adv',col('adv').orderBy('date','desc').limit(1000),function(r){S.adv=r;});
-  sub('att',col('att').orderBy('date','desc').limit(100),function(r){S.att=byId(r);});
+  sub('subs',col('subs').limit(300),function(r){S.subs=r;});
+  sub('meas',col('meas').orderBy('date','desc').limit(5000),function(r){S.meas=r;});
+  sub('att',col('att').orderBy('date','desc').limit(400),function(r){S.att=byId(r);});
   sub('plans',col('plans').orderBy('key','desc').limit(80),function(r){S.plans=byId(r);});
   sub('dpr',col('dpr').orderBy('date','desc').limit(400),function(r){S.dpr=byId(r);});
   sub('tools',col('tools').limit(1000),function(r){S.tools=r;});
@@ -396,16 +425,17 @@ function render(){
   else if(S.mode==='slow'&&!S.projects.length)h=stateCard('Still connecting…','The diary is taking longer than usual. Check your connection. Your projects appear here as soon as it answers.');
   else if(!S.projects.length)h=firstRun();
   else if(!proj())h=stateCard('Pick a project','Choose a project at the top.');
-  else h={home:vHome,att:vAtt,plan:vPlan,dpr:vDpr,store:vStore}[S.tab]();
+  else h=({home:vHome,att:vAtt,plan:vPlan,dpr:vDpr,store:vStore,meas:vMeas}[S.tab]||vHome)();
   v.innerHTML=h;
   if(S.tab==='store'&&proj())drawStoreList();
+  if(S.tab==='meas'&&proj()&&(S.measTab||'entry')==='entry')bindMeasForm();
 }
 function stateCard(t,p,extra){return '<div class="card state"><h3>'+esc(t)+'</h3><p>'+esc(p)+'</p>'+(extra||'')+'</div>';}
 function firstRun(){
   return '<div class="card"><div class="eyebrow">Act Masters site diary</div><h1>Set up your first project</h1>'+
     '<p class="muted" style="margin:0">One place for each site: daily attendance, daily and weekly plans, the daily progress report, tools and machinery, and material stock. The overview shows how far the project has come and which stage it is at.</p>'+
     '<div class="list" style="margin-inline:-14px">'+
-    ['Attendance by worker, with half days and overtime','Daily and weekly task plans you tick off on site','Daily progress report that moves each stage forward','Tools and machinery: who has what, and what is under repair','Core material and consumables: receipts, issues and low stock']
+    ['Attendance by worker, with half days and overtime','Daily and weekly task plans you tick off on site','Daily progress report that moves each stage forward','Tools and machinery: who has what, and what is under repair','Core material and consumables: receipts, issues and low stock','Subcontractor measurement and bills: inch-metre, inch-dia and per-item rates']
       .map(function(t){return '<div class="li"><span class="chip flame">✓</span><div class="main small">'+esc(t)+'</div></div>';}).join('')+
     '</div><button class="btn pri wide" data-act="newProject" type="button">Create a project</button></div>';
 }
@@ -476,13 +506,13 @@ function tile(tab,l,v,s){return '<button type="button" class="tile" data-act="go
 function kv(k,v){return v?'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>':'';}
 
 /* ----- Attendance ----- */
-function vAtt(){var k=S.attTab||'mark';return attSeg()+(k==='pay'?vPay():k==='adv'?vAdv():k==='sal'?vSal():vMark());}
+function vAtt(){var k=S.attTab||'mark';return attSeg()+(k==='pay'?vPay():k==='adv'?vAdv():k==='sal'?vSal():k==='month'?vMonth():vMark());}
 function vMark(){
-  var a=S.att[S.date]||{marks:{},ot:{}},ws=activeWorkers(),c=attCount(S.date)||{P:0,H:0,A:0,ot:0};
+  var a=S.att[S.date]||{marks:{},ot:{}},ws=activeWorkers(),c=attCount(S.date)||{P:0,H:0,A:0,SL:0,L:0,WO:0,PH:0,ot:0};
   var un=ws.filter(function(w){return !(a.marks||{})[w.id];}).length;
   var h='<section class="card"><div class="ch"><div><div class="eyebrow">Attendance</div><h3>'+fd(S.date,true)+' '+pd(S.date).getFullYear()+'</h3></div>'+
-    '<div class="row"><span class="chip good">P '+c.P+'</span><span class="chip warn">H '+c.H+'</span><span class="chip bad">A '+c.A+'</span>'+(un?'<span class="chip">'+un+' not marked</span>':'')+'</div></div>'+
-    '<div class="small muted">P present · H half day · A absent. Tap again to clear. OT is overtime in hours.</div>'+
+    '<div class="row"><span class="chip good">P '+c.P+'</span><span class="chip warn">HD '+c.H+'</span><span class="chip bad">A '+c.A+'</span>'+((c.SL||0)+(c.L||0)+(c.WO||0)+(c.PH||0)?'<span class="chip">Leave / off '+((c.SL||0)+(c.L||0)+(c.WO||0)+(c.PH||0))+'</span>':'')+''+(un?'<span class="chip">'+un+' not marked</span>':'')+'</div></div>'+
+    '<div class="small muted">P present · HD half day · A absent. Pick sick leave, leave, weekly off or holiday from the Leave list. Tap again to clear. OT is overtime in hours. To mark the whole month at once, open Month.</div>'+
     (ws.length?'<div class="row"><button class="btn sm" type="button" data-act="allP">Mark everyone not marked as present</button></div>':'')+'</section>';
   h+='<section class="card flush"><div class="ch"><h2>Workers ('+ws.length+')</h2><div class="row"><button class="btn sm" type="button" data-act="bulk">Upload Excel</button><button class="btn sm pri" type="button" data-act="addWorker">Add worker</button></div></div>';
   if(!S.loaded.workers)h+='<div class="empty">Loading workers…</div>';
@@ -491,7 +521,8 @@ function vMark(){
   ws.forEach(function(w){
     var m=(a.marks||{})[w.id]||'',ot=(a.ot||{})[w.id];
     h+='<div class="li"><button type="button" class="main" data-act="editWorker" data-id="'+w.id+'" style="border:0;background:none;padding:0;text-align:left;cursor:pointer"><div class="t">'+esc(w.name)+'</div><div class="d">'+esc([w.trade,w.contractor].filter(Boolean).join(' · ')||'Tap to add trade')+'</div></button>'+
-      '<div class="mark" role="group" aria-label="Attendance for '+esc(w.name)+'">'+['P','H','A'].map(function(v){return '<button type="button" data-act="mark" data-id="'+w.id+'" data-v="'+v+'" aria-pressed="'+(m===v)+'">'+v+'</button>';}).join('')+'</div>'+
+      '<div class="mark" role="group" aria-label="Attendance for '+esc(w.name)+'">'+['P','H','A'].map(function(v){return '<button type="button" data-act="mark" data-id="'+w.id+'" data-v="'+v+'" aria-pressed="'+(m===v)+'">'+attShort(v)+'</button>';}).join('')+'</div>'+
+      '<select class="lv'+(['SL','L','WO','PH'].indexOf(m)>=0?' on':'')+'" data-act="markX" data-id="'+w.id+'" aria-label="Leave or day off for '+esc(w.name)+'"><option value="">Leave</option>'+opts([['SL','Sick leave'],['L','Leave'],['WO','Weekly off'],['PH','Holiday']],m)+'</select>'+
       '<input class="ot" type="number" min="0" max="16" step="0.5" inputmode="decimal" placeholder="OT" aria-label="Overtime hours for '+esc(w.name)+'" data-act="ot" data-id="'+w.id+'" id="ot-'+w.id+'" value="'+(ot?esc(ot):'')+'"></div>';
   });
   h+='</section>';
@@ -753,14 +784,12 @@ function workerSheet(w){
 }
 
 function registerSheet(){
-  var m=S.date.slice(0,7),days=[],rows=activeWorkers().concat(S.workers.filter(function(w){return w.active===false;}));
-  Object.keys(S.att).forEach(function(k){if(k.slice(0,7)===m)days.push(k);});
-  var tot={};rows.forEach(function(w){tot[w.id]={P:0,H:0,A:0,ot:0};});
-  days.forEach(function(k){var a=S.att[k];Object.keys(a.marks||{}).forEach(function(id){if(tot[id]&&tot[id][a.marks[id]]!=null)tot[id][a.marks[id]]++;});Object.keys(a.ot||{}).forEach(function(id){if(tot[id])tot[id].ot+=n(a.ot[id]);});});
+  var m=S.date.slice(0,7),days=monthDays(m),C=payCfg(),rows=activeWorkers().concat(S.workers.filter(function(w){return w.active===false;}));
+  var marked=days.filter(function(k){return S.att[k];}).length,tot={};rows.forEach(function(w){tot[w.id]=tally(w.id,days);});
   rows=rows.filter(function(w){var t=tot[w.id];return w.active!==false||t.P||t.H||t.A;});
   var dn=MON[+m.slice(5,7)-1]+' '+m.slice(0,4);
-  sheet('Register for '+dn,'<div class="small muted">'+days.length+' day'+(days.length===1?'':'s')+' marked this month.</div><div class="tw"><table class="tb"><thead><tr><th>Name</th><th class="n">Days</th><th class="n">P</th><th class="n">H</th><th class="n">A</th><th class="n">OT h</th></tr></thead><tbody>'+
-    (rows.map(function(w){var t=tot[w.id];return '<tr><td>'+esc(w.name)+'<div class="small muted">'+esc(w.trade||'')+'</div></td><td class="n"><b>'+fq(t.P+t.H*0.5)+'</b></td><td class="n">'+t.P+'</td><td class="n">'+t.H+'</td><td class="n">'+t.A+'</td><td class="n">'+fq(t.ot)+'</td></tr>';}).join('')||'<tr><td colspan="6" class="muted">No attendance this month.</td></tr>')+'</tbody></table></div>');
+  sheet('Register for '+dn,'<div class="small muted">'+marked+' day'+(marked===1?'':'s')+' marked this month. Paid days count present, ½ for half days and the paid kinds of leave set under Salary.</div><div class="tw"><table class="tb"><thead><tr><th>Name</th><th class="n">Paid</th><th class="n">P</th><th class="n">HD</th><th class="n">A</th><th class="n">SL</th><th class="n">L</th><th class="n">WO</th><th class="n">PH</th><th class="n">OT h</th></tr></thead><tbody>'+
+    (rows.map(function(w){var t=tot[w.id];return '<tr><td>'+esc(w.name)+'<div class="small muted">'+esc(w.trade||'')+'</div></td><td class="n"><b>'+fq(paidDays(t,C))+'</b></td><td class="n">'+t.P+'</td><td class="n">'+t.H+'</td><td class="n">'+t.A+'</td><td class="n">'+t.SL+'</td><td class="n">'+t.L+'</td><td class="n">'+t.WO+'</td><td class="n">'+t.PH+'</td><td class="n">'+fq(t.ot)+'</td></tr>';}).join('')||'<tr><td colspan="10" class="muted">No attendance this month.</td></tr>')+'</tbody></table></div>');
 }
 
 function dprSheet(){
@@ -968,8 +997,8 @@ function loadXlsx(){
   return xlsxP;
 }
 var BULK=[
-  {key:'workers',sheet:'Workers',cols:['Name*','Trade','Contractor / agency','Phone','Pay basis (Month / Day)','Basic (Rs)','Allowances / incentives (Rs)','Agreed CTC per month (Rs)','PF (Yes / No)','ESIC (Yes / No)'],
-    note:'One row per person. A name already in the app is updated, not repeated. Basic and allowances are per month, or per day when the pay basis is Day. A row whose salary comes above the agreed CTC is skipped.'},
+  {key:'workers',sheet:'Workers',cols:['Name*','Trade','Contractor / agency','Phone','Pay basis (Month / Day)','Basic (Rs)','Other allowances (Rs)','Agreed CTC per month (Rs)','PF (Yes / No)','ESIC (Yes / No)','HRA (Rs)','Incentive / bonus (Rs)'],
+    note:'One row per person. A name already in the app is updated, not repeated. Basic, HRA, allowances and incentive are per month, or per day when the pay basis is Day. A row whose salary comes above the agreed CTC is skipped.'},
   {key:'materials',sheet:'Materials',cols:['Material name*','Type (Core / Consumable)','Unit','Opening stock','Minimum level','BOQ quantity'],
     note:'Opening stock is used only for materials that are new to the app. For existing materials, record receipts in Stores instead.'},
   {key:'tools',sheet:'Tools & Machines',cols:['Name*','Type (Tool / Machine)','Code / serial','Quantity','Ownership (Own / Hired)','Condition','Hired from','Hire rate per day (Rs)','Hired until (date)'],
@@ -978,8 +1007,8 @@ var BULK=[
     note:'Stages are matched by name. Weight is how much the stage counts toward the whole project.'},
   {key:'plan',sheet:'Plan',cols:['Plan (Day / Week)*','Date*','Task*','Stage','Target qty','Unit','Team / person'],
     note:'For a weekly plan, put any date in that week. Stage must match a stage name in the app.'},
-  {key:'att',sheet:'Attendance',cols:['Date*','Worker name*','Status (P / H / A)*','OT hours'],
-    note:'P present, H half day, A absent. Names not yet in the app are added as workers.'}
+  {key:'att',sheet:'Attendance',cols:['Date*','Worker name*','Status (P / HD / A / SL / L / WO / PH)*','OT hours'],
+    note:'P present, HD half day, A absent, SL sick leave, L leave, WO weekly off, PH holiday. Names not yet in the app are added as workers.'}
 ];
 var BULK_LABEL={workers:'Workers',materials:'Materials',tools:'Tools & machines',stages:'Stages',plan:'Plan tasks',att:'Attendance entries'};
 function hnorm(s){return String(s==null?'':s).replace(/\*/g,'').replace(/\(.*?\)/g,'').replace(/[^a-z0-9%]+/gi,' ').trim().toLowerCase();}
@@ -1024,7 +1053,7 @@ function parseBulk(wb){
       if(def.key==='workers'){
         var name=cstr(o[0]);if(!name)return err('name is empty');
         var bs=cstr(o[4]),yn=function(v){v=cstr(v);return v===''?'':!/^n/i.test(v);};
-        var w={name:name,trade:cstr(o[1]),contractor:cstr(o[2]),phone:cstr(o[3]),basis:bs===''?'':(/day|daily/i.test(bs)?'day':'month'),basic:cnum(o[5]),allow:cnum(o[6]),ctc:cnum(o[7]),pf:yn(o[8]),esi:yn(o[9])};
+        var w={name:name,trade:cstr(o[1]),contractor:cstr(o[2]),phone:cstr(o[3]),basis:bs===''?'':(/day|daily/i.test(bs)?'day':'month'),basic:cnum(o[5]),allow:cnum(o[6]),ctc:cnum(o[7]),pf:yn(o[8]),esi:yn(o[9]),hra:cnum(o[10]),inc:cnum(o[11])};
         var ex0=S.workers.filter(function(x){return lc(x.name)===lc(name);})[0],m0=Object.assign({},ex0||{});Object.keys(w).forEach(function(k){if(w[k]!=='')m0[k]=w[k];});
         var q0=wPay(m0),c0=calcPay(q0,payCfg());if(q0.ctc&&c0.ctc>q0.ctc)return err('salary comes to '+rs(c0.ctc)+' CTC, above the agreed '+rs(q0.ctc));
         var ex=S.workers.filter(function(x){return lc(x.name)===lc(name);})[0];
@@ -1059,8 +1088,8 @@ function parseBulk(wb){
         var ad=cdate(o[0]),wn=cstr(o[1]),stt=cstr(o[2]).toUpperCase();
         if(!ad||ad==='bad')return err('date "'+cstr(o[0])+'" is not a date');
         if(!wn)return err('worker name is empty');
-        var mk=/^(P|PRESENT|1)$/.test(stt)?'P':/^(H|HALF|HALF DAY|0\.5)$/.test(stt)?'H':/^(A|ABSENT|0)$/.test(stt)?'A':'';
-        if(!mk)return err('status "'+cstr(o[2])+'" must be P, H or A');
+        var mk=/^(P|PRESENT|1)$/.test(stt)?'P':/^(H|HD|HALF|HALF DAY|0\.5)$/.test(stt)?'H':/^(A|ABSENT|0)$/.test(stt)?'A':/^(SL|SICK|SICK LEAVE)$/.test(stt)?'SL':/^(L|CL|EL|LEAVE|PAID LEAVE)$/.test(stt)?'L':/^(WO|OFF|WEEKLY OFF|W\/O)$/.test(stt)?'WO':/^(PH|H\/D|HOLIDAY|PUBLIC HOLIDAY)$/.test(stt)?'PH':'';
+        if(!mk)return err('status "'+cstr(o[2])+'" must be P, HD, A, SL, L, WO or PH');
         R.adds++;R.rows.push({d:{date:ad,name:wn,mark:mk,ot:cnum(o[3])}});
       }
     });
@@ -1211,36 +1240,47 @@ function runBulk(R,pick){
   return inChunks(tasks).then(function(){return 'Imported '+done.join(', ')+'.';});
 }
 
-/* ---------- salary, PF, ESIC, advances and CTC ---------- */
-var PAYDEF={pfEe:12,pfEr:13,capOn:true,cap:15000,esiEe:0.75,esiEr:3.25,esiLim:21000,days:26};
+/* ---------- salary, PF, ESIC, advances, overtime and CTC ---------- */
+var PAYDEF={pfEe:12,pfEr:13,capOn:true,cap:15000,esiEe:0.75,esiEr:3.25,esiLim:21000,days:26,
+  otX:2,hrs:8,otBase:'fixed',slPaid:true,lPaid:true,phPaid:true,woPaid:false};
+/* attendance codes: H is stored for half day (older records use it) */
+var ATT=[['P','Present','P'],['H','Half day','HD'],['A','Absent','A'],['SL','Sick leave','SL'],['L','Leave (paid)','L'],['WO','Weekly off','WO'],['PH','Holiday','PH']];
+var ATTL={};ATT.forEach(function(a){ATTL[a[0]]=a;});
+function attShort(v){return ATTL[v]?ATTL[v][2]:v;}
 function payCfg(){var p=proj()||{};return Object.assign({},PAYDEF,p.pay||{});}
 function wPay(w){
   w=w||{};
   var old=w.basic==null&&w.rate!=null&&w.rate!=='';
   var basis=w.basis||(old?'day':'month');
-  return {basis:basis,basic:w.basic!=null&&w.basic!==''?n(w.basic):(old?n(w.rate):0),allow:n(w.allow),
+  return {basis:basis,basic:w.basic!=null&&w.basic!==''?n(w.basic):(old?n(w.rate):0),hra:n(w.hra),allow:n(w.allow),inc:n(w.inc),
     ctc:w.ctc===''||w.ctc==null?'':n(w.ctc),pf:w.pf!==false,esi:w.esi!==false};
 }
-/* f = share of the full month earned (1 = full month). Daily rates count C.days days as a month. */
-function calcPay(q,C,f){
-  if(f==null)f=1;
-  var mult=q.basis==='day'?C.days:1,bF=q.basic*mult,aF=q.allow*mult,gF=bF+aF;
-  var b=Math.round(bF*f),a=Math.round(aF*f),g=b+a;
+/* Hourly rate for overtime. Ordinary rate = basic (+ HRA and allowances when otBase is 'fixed'), per day ÷ working hours. */
+function otRate(q,C){
+  var day=q.basis==='day'?1:1/C.days,base=q.basic+(C.otBase==='fixed'?q.hra+q.allow:0);
+  return base*day/Math.max(1,C.hrs);
+}
+/* f = share of the full month earned (1 = full month). Daily rates count C.days days as a month. ot = overtime hours. */
+function calcPay(q,C,f,ot){
+  if(f==null)f=1;ot=n(ot);
+  var mult=q.basis==='day'?C.days:1,bF=q.basic*mult,hF=q.hra*mult,aF=q.allow*mult,iF=q.inc*mult,gF=bF+hF+aF+iF;
+  var b=Math.round(bF*f),h=Math.round(hF*f),a=Math.round(aF*f),i=Math.round(iF*f),fixed=b+h+a+i;
+  var rate=otRate(q,C),otp=Math.round(ot*rate*C.otX),g=fixed+otp;
   var pfw=q.pf?(C.capOn?Math.min(b,C.cap):b):0;
   var pfEe=Math.round(pfw*C.pfEe/100),pfEr=Math.round(pfw*C.pfEr/100);
   var esiOn=q.esi&&gF>0&&gF<=C.esiLim;
   var esiEe=esiOn?Math.ceil(g*C.esiEe/100):0,esiEr=esiOn?Math.ceil(g*C.esiEr/100):0;
-  return {basic:b,allow:a,gross:g,grossFull:gF,pfEe:pfEe,pfEr:pfEr,esiOn:esiOn,esiEe:esiEe,esiEr:esiEr,ctc:g+pfEr+esiEr,net:g-pfEe-esiEe};
+  return {basic:b,hra:h,allow:a,inc:i,fixed:fixed,ot:ot,otRate:rate,otPay:otp,gross:g,grossFull:gF,pfEe:pfEe,pfEr:pfEr,esiOn:esiOn,esiEe:esiEe,esiEr:esiEr,ctc:g+pfEr+esiEr,net:g-pfEe-esiEe};
 }
-/* Largest allowance that keeps the calculated CTC at or under the agreed CTC. null = basic alone is over. */
+/* Largest "other allowances" that keeps the calculated CTC at or under the agreed CTC. null = the rest is already over. */
 function fitAllow(q,C){
   var T=n(q.ctc);if(!T)return null;
-  var mult=q.basis==='day'?C.days:1,bF=q.basic*mult;
+  var mult=q.basis==='day'?C.days:1,bF=q.basic*mult,fixF=(q.basic+q.hra+q.inc)*mult;
   var pfw=q.pf?(C.capOn?Math.min(bF,C.cap):bF):0,pfEr=Math.round(pfw*C.pfEr/100);
-  if(T-pfEr<bF)return null;
+  if(T-pfEr<fixF)return null;
   var g1=(T-pfEr)/(1+C.esiEr/100),g=(q.esi&&g1<=C.esiLim)?g1:T-pfEr;
-  var step=q.basis==='day'?0.01:1,al=Math.floor((g-bF)/mult/step)*step,t=Object.assign({},q);
-  for(var i=0;i<400;i++){t.allow=al;if(calcPay(t,C).ctc<=T||al<=0)break;al=Math.round((al-step)*100)/100;}
+  var step=q.basis==='day'?0.01:1,al=Math.floor((g-fixF)/mult/step)*step,t=Object.assign({},q);
+  for(var k=0;k<400;k++){t.allow=al;if(calcPay(t,C).ctc<=T||al<=0)break;al=Math.round((al-step)*100)/100;}
   t.allow=Math.max(0,al);
   if(calcPay(t,C).ctc>T)return null;
   return Math.round(t.allow*100)/100;
@@ -1257,19 +1297,20 @@ function payBadge(w){var q=wPay(w),c=calcPay(q,payCfg()),s=ctcStatus(q,c);return
 
 function attSeg(){
   var k=S.attTab||'mark';
-  return '<div class="seg seg4" role="group" aria-label="Attendance section">'+[['mark','Attendance'],['pay','Salary & CTC'],['adv','Advances'],['sal','Salary sheet']].map(function(o){return '<button type="button" data-act="atab" data-v="'+o[0]+'" aria-pressed="'+(k===o[0])+'">'+o[1]+'</button>';}).join('')+'</div>';
+  return '<div class="seg seg5" role="group" aria-label="Attendance section">'+[['mark','Daily'],['month','Month'],['pay','Salary'],['adv','Advances'],['sal','Pay sheet']].map(function(o){return '<button type="button" data-act="atab" data-v="'+o[0]+'" aria-pressed="'+(k===o[0])+'">'+o[1]+'</button>';}).join('')+'</div>';
 }
 function vPay(){
   var C=payCfg(),ws=activeWorkers(),tA=0,tC=0,over=0;
-  var h='<section class="card"><div class="ch"><div><div class="eyebrow">Salary structure</div><h3>Monthly pay against agreed CTC</h3></div><button class="btn sm" type="button" data-act="payCfg">PF &amp; ESIC rates</button></div>'+
-    '<div class="small muted">Gross = basic + allowances and incentives. CTC = gross + employer PF ('+C.pfEr+'%) + employer ESIC ('+C.esiEr+'%, when gross is up to '+rs(C.esiLim)+'). Salary can’t be saved above the agreed CTC; the gap shows what is left for allowances or incentives.</div></section>';
+  var h='<section class="card"><div class="ch"><div><div class="eyebrow">Salary structure</div><h3>Monthly pay against agreed CTC</h3></div><button class="btn sm" type="button" data-act="payCfg">Rates &amp; overtime</button></div>'+
+    '<div class="small muted">Gross = basic + HRA + other allowances + incentive / bonus. CTC = gross + employer PF ('+C.pfEr+'%) + employer ESIC ('+C.esiEr+'%, when gross is up to '+rs(C.esiLim)+'). Overtime is paid at '+C.otX+'× the ordinary hourly rate and is not part of the CTC.</div></section>';
   h+='<section class="card flush"><div class="ch"><h2>Workers ('+ws.length+')</h2><button class="btn sm" type="button" data-act="bulk">Upload Excel</button></div>';
   if(!ws.length)h+='<div class="empty">Add workers under Attendance first.</div>';
   ws.forEach(function(w){
-    var q=wPay(w),c=calcPay(q,C),s=ctcStatus(q,c);
+    var q=wPay(w),c=calcPay(q,C),s=ctcStatus(q,c),u=q.basis==='day'?'/day':'/month';
     if(q.ctc)tA+=q.ctc;tC+=c.ctc;if(s[0]==='bad')over++;
+    var parts=[rs(q.basic)+u+' basic'];if(q.hra)parts.push('HRA '+rs(q.hra));if(q.allow)parts.push('allow. '+rs(q.allow));if(q.inc)parts.push('incentive '+rs(q.inc));
     h+='<button type="button" class="li" data-act="editPay" data-id="'+w.id+'"><div class="main"><div class="t">'+esc(w.name)+'</div><div class="d">'+
-      (q.basic?esc((q.basis==='day'?rs(q.basic)+'/day':rs(q.basic)+'/month')+' basic'+(q.allow?' + '+rs(q.allow)+' allowances':'')+' · CTC '+rs(c.ctc)+(q.ctc?' of '+rs(q.ctc):'')):'Tap to enter salary and CTC')+'</div></div>'+
+      (q.basic?esc(parts.join(' + ')+' · CTC '+rs(c.ctc)+(q.ctc?' of '+rs(q.ctc):'')):'Tap to enter salary and CTC')+'</div></div>'+
       '<span class="chip '+s[0]+'">'+esc(s[1])+'</span></button>';
   });
   h+='</section>';
@@ -1278,34 +1319,37 @@ function vPay(){
 }
 function paySheet(w){
   var C=payCfg(),q=wPay(w);
+  var inp=function(id,lab,v){return '<label class="f"><span id="'+id+'-l">'+lab+'</span><input id="'+id+'" type="number" min="0" step="any" inputmode="decimal" value="'+esc(v||'')+'"></label>';};
   sheet('Salary · '+w.name,'<form id="pyf" class="sh-b" style="padding:0">'+
     '<div class="g2"><label class="f"><span>Pay basis</span><select id="py-basis">'+opts([['month','Monthly salary'],['day','Daily wage']],q.basis)+'</select></label>'+
     '<label class="f"><span>Agreed CTC (₹ per month)</span><input id="py-ctc" type="number" min="0" step="any" inputmode="decimal" value="'+esc(q.ctc)+'"></label></div>'+
-    '<div class="g2"><label class="f"><span id="py-bl">Basic salary</span><input id="py-basic" type="number" min="0" step="any" inputmode="decimal" value="'+esc(q.basic||'')+'"></label>'+
-    '<label class="f"><span id="py-al">Allowances / incentives</span><input id="py-allow" type="number" min="0" step="any" inputmode="decimal" value="'+esc(q.allow||'')+'"></label></div>'+
+    '<div class="g2">'+inp('py-basic','Basic salary',q.basic)+inp('py-hra','HRA',q.hra)+'</div>'+
+    '<div class="g2">'+inp('py-allow','Other allowances',q.allow)+inp('py-inc','Incentive / bonus',q.inc)+'</div>'+
     '<div class="row"><label class="row" style="gap:6px"><input type="checkbox" id="py-pf"'+(q.pf?' checked':'')+'> PF applies</label><label class="row" style="gap:6px"><input type="checkbox" id="py-esi"'+(q.esi?' checked':'')+'> ESIC applies</label></div>'+
     '<div id="py-out"></div>'+
-    '<button class="btn" type="button" id="py-fit">Fit allowances to the agreed CTC</button>'+
+    '<button class="btn" type="button" id="py-fit">Fit other allowances to the agreed CTC</button>'+
     '<button class="btn pri" type="submit" id="py-save">Save salary</button></form>',
   function(b){
-    function read(){return {basis:val('py-basis'),basic:n(val('py-basic')),allow:n(val('py-allow')),ctc:val('py-ctc')===''?'':n(val('py-ctc')),pf:$('#py-pf').checked,esi:$('#py-esi').checked};}
+    function read(){return {basis:val('py-basis'),basic:n(val('py-basic')),hra:n(val('py-hra')),allow:n(val('py-allow')),inc:n(val('py-inc')),ctc:val('py-ctc')===''?'':n(val('py-ctc')),pf:$('#py-pf').checked,esi:$('#py-esi').checked};}
     function draw(){
       var r=read(),c=calcPay(r,C),s=ctcStatus(r,c),u=r.basis==='day'?'per day':'per month';
-      $('#py-bl').textContent='Basic salary (₹ '+u+')';$('#py-al').textContent='Allowances / incentives (₹ '+u+')';
+      $('#py-basic-l').textContent='Basic salary (₹ '+u+')';$('#py-hra-l').textContent='HRA (₹ '+u+')';
+      $('#py-allow-l').textContent='Other allowances (₹ '+u+')';$('#py-inc-l').textContent='Incentive / bonus (₹ '+u+')';
       var row=function(k,v,cls){return '<tr><td style="white-space:normal">'+k+'</td><td class="n"'+(cls?' style="'+cls+'"':'')+'>'+v+'</td></tr>';};
       $('#py-out').innerHTML=(r.basis==='day'?'<div class="small muted">Monthly figures below count '+C.days+' working days.</div>':'')+
-        '<div class="tw"><table class="tb" style="width:100%"><tbody>'+row('Basic',rs(c.basic))+row('Allowances / incentives',rs(c.allow))+row('<b>Gross salary</b>','<b>'+rs(c.gross)+'</b>')+
-        row('Employee PF '+C.pfEe+'%','− '+rs(c.pfEe))+row('Employee ESIC '+C.esiEe+'%'+(r.esi&&!c.esiOn?' (gross above '+rs(C.esiLim)+')':''),'− '+rs(c.esiEe))+
+        '<div class="tw"><table class="tb" style="width:100%"><tbody>'+row('Basic',rs(c.basic))+row('HRA',rs(c.hra))+row('Other allowances',rs(c.allow))+row('Incentive / bonus',rs(c.inc))+row('<b>Gross salary</b>','<b>'+rs(c.gross)+'</b>')+
+        row('Employee PF '+C.pfEe+'% (on basic)','− '+rs(c.pfEe))+row('Employee ESIC '+C.esiEe+'%'+(r.esi&&!c.esiOn?' (gross above '+rs(C.esiLim)+')':''),'− '+rs(c.esiEe))+
         row('Take-home before advances',rs(c.net))+row('Employer PF '+C.pfEr+'%',rs(c.pfEr))+row('Employer ESIC '+C.esiEr+'%',rs(c.esiEr))+
         row('<b>Calculated CTC</b>','<b>'+rs(c.ctc)+'</b>')+(r.ctc?row('Agreed CTC',rs(r.ctc))+row('<b>Difference</b>','<b>'+(r.ctc-c.ctc>=0?rs(r.ctc-c.ctc):'− '+rs(c.ctc-r.ctc))+'</b>',r.ctc-c.ctc<0?'color:var(--bad)':'color:var(--good)'):'')+
+        row('Overtime rate ('+C.otX+'× ordinary rate)','₹ '+fq(Math.round(c.otRate*C.otX*100)/100)+' per hour')+
         '</tbody></table></div>'+(r.ctc?'<div class="alert '+(s[0]==='bad'?'bad':'good')+'">'+esc(s[0]==='bad'?s[1]+'. Reduce allowances, or tap Fit to bring it within the CTC.':s[0]==='good'?'Salary matches the agreed CTC.':s[1]+'. Add it as allowances or incentives, or tap Fit.')+'</div>':'');
       $('#py-save').disabled=s[0]==='bad';
     }
     var pf=$('#pyf',b);pf.addEventListener('input',draw);pf.addEventListener('change',draw);draw();
     $('#py-fit').onclick=function(){
       var r=read();if(!r.ctc){toast('Enter the agreed CTC first.');return;}
-      var a=fitAllow(r,C);if(a==null){toast('The basic salary with PF and ESIC is already above the agreed CTC. Lower the basic.');return;}
-      $('#py-allow').value=a;draw();toast('Allowances set to '+(r.basis==='day'?'₹ '+a+' per day':rs(a)+' per month'));
+      var a=fitAllow(r,C);if(a==null){toast('Basic, HRA and incentive with PF and ESIC are already above the agreed CTC.');return;}
+      $('#py-allow').value=a;draw();toast('Other allowances set to '+(r.basis==='day'?'₹ '+a+' per day':rs(a)+' per month'));
     };
     $('#pyf').onsubmit=function(e){
       e.preventDefault();var r=read(),c=calcPay(r,C);
@@ -1318,18 +1362,27 @@ function paySheet(w){
 function payCfgSheet(){
   var C=payCfg(),p=proj();
   var f=function(id,l,v){return '<label class="f"><span>'+l+'</span><input id="'+id+'" type="number" min="0" step="any" inputmode="decimal" value="'+esc(v)+'"></label>';};
-  sheet('PF and ESIC rates','<form id="pcf" class="sh-b" style="padding:0"><div class="small muted">These apply to every worker on this project. Check them against the current EPFO and ESIC notifications.</div>'+
+  var yn=function(id,l,v){return '<label class="row" style="gap:6px"><input type="checkbox" id="'+id+'"'+(v?' checked':'')+'> '+l+'</label>';};
+  sheet('Rates, overtime and leave','<form id="pcf" class="sh-b" style="padding:0"><div class="small muted">These apply to every worker on this project. Check PF and ESIC against the current EPFO and ESIC notifications.</div>'+
+    '<div class="eyebrow">PF and ESIC</div>'+
     '<div class="g2">'+f('pc-pfee','Employee PF %',C.pfEe)+f('pc-pfer','Employer PF % (incl. admin and EDLI)',C.pfEr)+'</div>'+
     '<div class="g2">'+f('pc-cap','PF wage ceiling (₹)',C.cap)+'<label class="f"><span>PF on</span><select id="pc-capon">'+opts([['1','Basic up to the ceiling'],['0','Full basic']],C.capOn?'1':'0')+'</select></label></div>'+
     '<div class="g3">'+f('pc-esee','Employee ESIC %',C.esiEe)+f('pc-eser','Employer ESIC %',C.esiEr)+f('pc-eslim','ESIC gross limit (₹)',C.esiLim)+'</div>'+
-    f('pc-days','Days counted as a full month',C.days)+'<div class="small muted">Monthly staff are paid days worked ÷ this number (capped at a full month). Daily-wage CTC is compared over this many days.</div>'+
-    '<button class="btn pri" type="submit">Save rates</button></form>',function(b){
+    '<div class="eyebrow">Month and overtime</div>'+
+    '<div class="g3">'+f('pc-days','Paid days in a full month',C.days)+f('pc-hrs','Working hours per day',C.hrs)+f('pc-otx','Overtime multiplier',C.otX)+'</div>'+
+    '<label class="f"><span>Overtime is calculated on</span><select id="pc-otb">'+opts([['fixed','Basic + HRA + other allowances (Factories Act ordinary rate)'],['basic','Basic only']],C.otBase)+'</select></label>'+
+    '<div class="small muted">Hourly rate = monthly ordinary wages ÷ paid days ÷ hours per day (for daily wage: day rate ÷ hours). Overtime pay = hours × hourly rate × multiplier. The usual standard is 2× (Factories Act, section 59).</div>'+
+    '<div class="eyebrow">Which days are paid</div>'+
+    '<div class="row" style="flex-wrap:wrap">'+yn('pc-sl','Sick leave (SL)',C.slPaid)+yn('pc-l','Leave (L)',C.lPaid)+yn('pc-ph','Holiday (PH)',C.phPaid)+yn('pc-wo','Weekly off (WO)',C.woPaid)+'</div>'+
+    '<div class="small muted">Paid days = present + ½ for each half day + the ticked kinds of day, up to the full month. Leave weekly offs unticked when a full month is 26 days, since 26 already leaves Sundays out; tick it if you set 30 or 31.</div>'+
+    '<button class="btn pri" type="submit">Save</button></form>',function(b){
     $('#pcf',b).onsubmit=function(e){e.preventDefault();
-      var d={pfEe:n(val('pc-pfee')),pfEr:n(val('pc-pfer')),cap:n(val('pc-cap')),capOn:val('pc-capon')==='1',esiEe:n(val('pc-esee')),esiEr:n(val('pc-eser')),esiLim:n(val('pc-eslim')),days:Math.max(1,n(val('pc-days'))||26)};
-      S.db.collection('projects').doc(p.id).update({pay:d}).then(function(){closeSheet();toast('Rates saved');},fail);};
+      var d={pfEe:n(val('pc-pfee')),pfEr:n(val('pc-pfer')),cap:n(val('pc-cap')),capOn:val('pc-capon')==='1',esiEe:n(val('pc-esee')),esiEr:n(val('pc-eser')),esiLim:n(val('pc-eslim')),
+        days:Math.max(1,n(val('pc-days'))||26),hrs:Math.max(1,n(val('pc-hrs'))||8),otX:n(val('pc-otx'))||2,otBase:val('pc-otb'),
+        slPaid:$('#pc-sl').checked,lPaid:$('#pc-l').checked,phPaid:$('#pc-ph').checked,woPaid:$('#pc-wo').checked};
+      S.db.collection('projects').doc(p.id).update({pay:d}).then(function(){closeSheet();toast('Saved');},fail);};
   });
 }
-
 /* advances */
 function monthOf(s){return String(s||'').slice(0,7);}
 function monthName(m){return MON[+m.slice(5,7)-1]+' '+m.slice(0,4);}
@@ -1354,28 +1407,62 @@ function vAdv(){
   return h+'</section>';
 }
 
-/* monthly salary sheet */
+/* ---------- month attendance grid ---------- */
+function monthDays(m){var y=+m.slice(0,4),mo=+m.slice(5,7),last=new Date(y,mo,0).getDate(),d=[];for(var i=1;i<=last;i++)d.push(m+'-'+pad(i));return d;}
+/* tallies for one worker over a list of dates */
+function tally(id,days){
+  var t={P:0,H:0,A:0,SL:0,L:0,WO:0,PH:0,ot:0};
+  days.forEach(function(k){var a=S.att[k];if(!a)return;var v=(a.marks||{})[id];if(v&&t[v]!=null)t[v]++;if(a.ot&&a.ot[id])t.ot+=n(a.ot[id]);});
+  return t;
+}
+function paidDays(t,C){return t.P+t.H*0.5+(C.slPaid?t.SL:0)+(C.lPaid?t.L:0)+(C.phPaid?t.PH:0)+(C.woPaid?t.WO:0);}
+function vMonth(){
+  var m=monthOf(S.date),days=monthDays(m),C=payCfg(),br=S.brush||'P',t0=today();
+  var ws=activeWorkers().concat(S.workers.filter(function(w){return w.active===false&&days.some(function(d){var a=S.att[d];return a&&a.marks&&a.marks[w.id];});}));
+  var h='<section class="card"><div class="ch"><div><div class="eyebrow">Month attendance</div><h3>'+monthName(m)+'</h3></div>'+
+    '<div class="row"><button class="btn sm" type="button" data-act="mmove" data-v="-1" aria-label="Previous month">‹</button><button class="btn sm" type="button" data-act="mmove" data-v="1" aria-label="Next month">›</button></div></div>'+
+    '<div class="small muted">Pick a mark below, then tap a cell to set it. Tap a cell again to clear it. Tap a date at the top to give that mark to everyone not yet marked that day.</div>'+
+    '<div class="brush" role="group" aria-label="Mark to apply">'+ATT.map(function(a){return '<button type="button" class="am am-'+a[0]+'" data-act="brush" data-v="'+a[0]+'" aria-pressed="'+(br===a[0])+'" title="'+esc(a[1])+'"><b>'+a[2]+'</b><span>'+esc(a[1])+'</span></button>';}).join('')+'</div>'+
+    '<div class="row"><button class="btn sm" type="button" data-act="fillSun">Mark Sundays as weekly off</button>'+(S.dl?'<button class="btn sm" type="button" data-act="exportAtt">Download '+monthName(m)+' (CSV)</button>':'')+'</div></section>';
+  if(!ws.length)return h+'<section class="card"><div class="empty">Add workers under Daily first.</div></section>';
+  h+='<section class="card flush"><div class="tw mg" style="border:0;border-radius:0"><table class="tb grid"><thead><tr><th class="nm">Worker</th>'+
+    days.map(function(d){var dt=pd(d),wd=dt.getDay();return '<th class="dc'+(wd===0?' sun':'')+(d===t0?' td':'')+'"><button type="button" data-act="colFill" data-d="'+d+'" aria-label="Mark everyone on '+fd(d,true)+'">'+dt.getDate()+'<i>'+WD[wd][0]+'</i></button></th>';}).join('')+
+    '<th class="n">Paid</th><th class="n">P</th><th class="n">A</th><th class="n">Lv</th><th class="n">OT h</th></tr></thead><tbody>'+
+    ws.map(function(w){var t=tally(w.id,days);
+      return '<tr><td class="nm">'+esc(w.name)+'</td>'+days.map(function(d){var a=S.att[d],v=a&&a.marks?a.marks[w.id]||'':'',wd=pd(d).getDay();
+        return '<td class="dc'+(wd===0?' sun':'')+'"><button type="button" class="cell'+(v?' am-'+v:'')+'" data-act="cell" data-id="'+w.id+'" data-d="'+d+'" aria-label="'+esc(w.name)+', '+fd(d,true)+': '+(v?ATTL[v]?ATTL[v][1]:v:'not marked')+'">'+(v?attShort(v):'')+'</button></td>';}).join('')+
+        '<td class="n"><b>'+fq(paidDays(t,C))+'</b></td><td class="n">'+fq(t.P+t.H*0.5)+'</td><td class="n">'+t.A+'</td><td class="n">'+(t.SL+t.L)+'</td><td class="n">'+fq(t.ot)+'</td></tr>';}).join('')+
+    '</tbody></table></div></section>';
+  h+='<div class="small muted" style="padding:0 4px">Paid = days paid for salary: present, ½ for half days, and '+[C.slPaid?'sick leave':'',C.lPaid?'leave':'',C.phPaid?'holidays':'',C.woPaid?'weekly offs':''].filter(Boolean).join(', ')+'. Change this under Salary → Rates &amp; overtime.</div>';
+  return h;
+}
+function writeAttDay(d,fn){
+  var a=JSON.parse(JSON.stringify(S.att[d]||{date:d,marks:{},ot:{}}));
+  a.marks=a.marks||{};a.ot=a.ot||{};a.date=d;
+  fn(a);stamp(a);S.att[d]=a;
+  return put('att',d,a).catch(function(){});
+}
+
+/* ---------- monthly salary sheet ---------- */
 function salaryRows(m){
-  var C=payCfg(),days={},ot={},adv={};
-  Object.keys(S.att).forEach(function(k){if(k.slice(0,7)!==m)return;var a=S.att[k];
-    Object.keys(a.marks||{}).forEach(function(id){var v=a.marks[id];days[id]=(days[id]||0)+(v==='P'?1:v==='H'?0.5:0);});
-    Object.keys(a.ot||{}).forEach(function(id){ot[id]=(ot[id]||0)+n(a.ot[id]);});});
+  var C=payCfg(),days=monthDays(m),adv={};
   S.adv.forEach(function(a){if(monthOf(a.date)===m)adv[a.wid]=(adv[a.wid]||0)+n(a.amt);});
-  return S.workers.filter(function(w){return w.active!==false||days[w.id]||adv[w.id];}).sort(function(a,b){return (a.name||'').localeCompare(b.name||'');}).map(function(w){
-    var q=wPay(w),d=days[w.id]||0,f=q.basis==='day'?d/C.days:Math.min(d,C.days)/C.days,c=calcPay(q,C,f),ad=adv[w.id]||0;
-    return {w:w,q:q,days:d,ot:ot[w.id]||0,c:c,adv:ad,net:c.net-ad};
+  var T={};S.workers.forEach(function(w){T[w.id]=tally(w.id,days);});
+  return S.workers.filter(function(w){var t=T[w.id];return w.active!==false||t.P||t.H||adv[w.id];}).sort(function(a,b){return (a.name||'').localeCompare(b.name||'');}).map(function(w){
+    var q=wPay(w),t=T[w.id],pdays=paidDays(t,C),f=q.basis==='day'?pdays/C.days:Math.min(pdays,C.days)/C.days,c=calcPay(q,C,f,t.ot),ad=adv[w.id]||0;
+    return {w:w,q:q,t:t,days:pdays,ot:t.ot,c:c,adv:ad,net:c.net-ad};
   });
 }
 function vSal(){
-  var m=monthOf(S.date),C=payCfg(),R=salaryRows(m),T={g:0,pf:0,es:0,ad:0,net:0,ctc:0};
-  R.forEach(function(r){T.g+=r.c.gross;T.pf+=r.c.pfEe;T.es+=r.c.esiEe;T.ad+=r.adv;T.net+=r.net;T.ctc+=r.c.ctc;});
-  var h='<section class="card"><div class="ch"><div><div class="eyebrow">Salary sheet</div><h3>'+monthName(m)+'</h3></div><span class="chip">'+rs(T.net)+' payable</span></div>'+
-    '<div class="small muted">Days worked come from attendance (half day = 0.5). A full month is '+C.days+' days. Overtime hours are listed but not paid here.</div>'+
-    '<div class="row">'+(S.dl?'<button class="btn sm" type="button" data-act="exportSal">Download '+monthName(m)+' (CSV)</button>':'')+'<button class="btn sm" type="button" data-act="payCfg">PF &amp; ESIC rates</button></div></section>';
+  var m=monthOf(S.date),C=payCfg(),R=salaryRows(m),T={f:0,ot:0,g:0,pf:0,es:0,ad:0,net:0,ctc:0};
+  R.forEach(function(r){T.f+=r.c.fixed;T.ot+=r.c.otPay;T.g+=r.c.gross;T.pf+=r.c.pfEe;T.es+=r.c.esiEe;T.ad+=r.adv;T.net+=r.net;T.ctc+=r.c.ctc;});
+  var h='<section class="card"><div class="ch"><div><div class="eyebrow">Pay sheet</div><h3>'+monthName(m)+'</h3></div><span class="chip">'+rs(T.net)+' payable</span></div>'+
+    '<div class="small muted">Paid days come from the month attendance; a full month is '+C.days+' days. Overtime is paid at '+C.otX+'× the ordinary hourly rate ('+(C.otBase==='fixed'?'basic + HRA + allowances':'basic')+' ÷ '+C.days+' days ÷ '+C.hrs+' hours).</div>'+
+    '<div class="row">'+(S.dl?'<button class="btn sm" type="button" data-act="exportSal">Download '+monthName(m)+' (CSV)</button>':'')+'<button class="btn sm" type="button" data-act="payCfg">Rates &amp; overtime</button></div></section>';
   if(!R.length)return h+'<section class="card"><div class="empty">No workers yet.</div></section>';
-  h+='<section class="card flush"><div class="tw" style="border:0;border-radius:0"><table class="tb"><thead><tr><th>Worker</th><th class="n">Days</th><th class="n">Gross</th><th class="n">PF</th><th class="n">ESIC</th><th class="n">Advance</th><th class="n">Net pay</th><th class="n">CTC</th></tr></thead><tbody>'+
-    R.map(function(r){return '<tr><td>'+esc(r.w.name)+'<div class="small muted">'+(r.q.basic?(r.q.basis==='day'?rs(r.q.basic)+'/day':rs(r.q.basic)+'/mo basic'):'No salary set')+(r.ot?' · OT '+fq(r.ot)+' h':'')+'</div></td><td class="n">'+fq(r.days)+'</td><td class="n">'+fq(r.c.gross)+'</td><td class="n">'+fq(r.c.pfEe)+'</td><td class="n">'+fq(r.c.esiEe)+'</td><td class="n">'+fq(r.adv)+'</td><td class="n" style="font-weight:600'+(r.net<0?';color:var(--bad)':'')+'">'+fq(r.net)+'</td><td class="n">'+fq(r.c.ctc)+'</td></tr>';}).join('')+
-    '<tr><td><b>Total</b></td><td></td><td class="n"><b>'+fq(T.g)+'</b></td><td class="n"><b>'+fq(T.pf)+'</b></td><td class="n"><b>'+fq(T.es)+'</b></td><td class="n"><b>'+fq(T.ad)+'</b></td><td class="n"><b>'+fq(T.net)+'</b></td><td class="n"><b>'+fq(T.ctc)+'</b></td></tr>'+
+  h+='<section class="card flush"><div class="tw" style="border:0;border-radius:0"><table class="tb"><thead><tr><th>Worker</th><th class="n">Paid days</th><th class="n">Salary earned</th><th class="n">OT</th><th class="n">Gross</th><th class="n">PF</th><th class="n">ESIC</th><th class="n">Advance</th><th class="n">Net pay</th><th class="n">CTC</th></tr></thead><tbody>'+
+    R.map(function(r){return '<tr><td>'+esc(r.w.name)+'<div class="small muted">'+(r.q.basic?(r.q.basis==='day'?rs(r.q.basic)+'/day':rs(r.q.basic)+'/mo basic'):'No salary set')+'</div></td><td class="n">'+fq(r.days)+'</td><td class="n">'+fq(r.c.fixed)+'</td><td class="n">'+(r.ot?fq(r.c.otPay)+'<div class="small muted">'+fq(r.ot)+' h</div>':'0')+'</td><td class="n">'+fq(r.c.gross)+'</td><td class="n">'+fq(r.c.pfEe)+'</td><td class="n">'+fq(r.c.esiEe)+'</td><td class="n">'+fq(r.adv)+'</td><td class="n" style="font-weight:600'+(r.net<0?';color:var(--bad)':'')+'">'+fq(r.net)+'</td><td class="n">'+fq(r.c.ctc)+'</td></tr>';}).join('')+
+    '<tr><td><b>Total</b></td><td></td><td class="n"><b>'+fq(T.f)+'</b></td><td class="n"><b>'+fq(T.ot)+'</b></td><td class="n"><b>'+fq(T.g)+'</b></td><td class="n"><b>'+fq(T.pf)+'</b></td><td class="n"><b>'+fq(T.es)+'</b></td><td class="n"><b>'+fq(T.ad)+'</b></td><td class="n"><b>'+fq(T.net)+'</b></td><td class="n"><b>'+fq(T.ctc)+'</b></td></tr>'+
     '</tbody></table></div></section>';
   var neg=R.filter(function(r){return r.net<0;});
   if(neg.length)h+='<div class="alert bad">'+neg.length+' worker'+(neg.length>1?'s have':' has')+' advances larger than this month’s pay. Carry the balance to next month by re-dating part of the advance.</div>';
@@ -1383,10 +1470,24 @@ function vSal(){
 }
 function exportSal(){
   var m=monthOf(S.date),R=salaryRows(m);
-  var rows=[['Worker','Trade','Pay basis','Days worked','OT hours','Basic earned','Allowances earned','Gross earned','Employee PF','Employee ESIC','Advances','Net payable','Employer PF','Employer ESIC','CTC earned','Agreed CTC per month']];
-  R.forEach(function(r){var c=r.c;rows.push([r.w.name,r.w.trade||'',r.q.basis==='day'?'Daily':'Monthly',r.days,r.ot,c.basic,c.allow,c.gross,c.pfEe,c.esiEe,r.adv,r.net,c.pfEr,c.esiEr,c.ctc,r.q.ctc]);});
-  dl('Salary '+safe(proj().name)+' '+monthName(m)+'.csv',csv(rows));
+  var rows=[['Worker','Trade','Pay basis','Present','Half days','Absent','Sick leave','Leave','Weekly off','Holiday','Paid days','Basic earned','HRA earned','Other allowances earned','Incentive / bonus earned','OT hours','OT rate per hour','OT pay','Gross earned','Employee PF','Employee ESIC','Advances','Net payable','Employer PF','Employer ESIC','CTC earned','Agreed CTC per month']];
+  R.forEach(function(r){var c=r.c,t=r.t;rows.push([r.w.name,r.w.trade||'',r.q.basis==='day'?'Daily':'Monthly',t.P,t.H,t.A,t.SL,t.L,t.WO,t.PH,r.days,c.basic,c.hra,c.allow,c.inc,r.ot,Math.round(c.otRate*payCfg().otX*100)/100,c.otPay,c.gross,c.pfEe,c.esiEe,r.adv,r.net,c.pfEr,c.esiEr,c.ctc,r.q.ctc]);});
+  dl('Pay sheet '+safe(proj().name)+' '+monthName(m)+'.csv',csv(rows));
 }
+/* month-grid and leave-code events */
+$('#view').addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]');if(!b)return;var a=b.getAttribute('data-act');
+  if(a==='brush'){S.brush=b.getAttribute('data-v');render();}
+  else if(a==='mmove'){var d=pd(monthOf(S.date)+'-01');d.setMonth(d.getMonth()+(+b.getAttribute('data-v')));S.date=iso(d);$('#dateSel').value=S.date;render();}
+  else if(a==='cell'){var id=b.getAttribute('data-id'),d=b.getAttribute('data-d'),v=S.brush||'P';writeAttDay(d,function(x){if(x.marks[id]===v)delete x.marks[id];else x.marks[id]=v;});render();}
+  else if(a==='colFill'){var d2=b.getAttribute('data-d'),v2=S.brush||'P',k=0;writeAttDay(d2,function(x){activeWorkers().forEach(function(w){if(!x.marks[w.id]){x.marks[w.id]=v2;k++;}});});render();toast(k?k+' marked '+ATTL[v2][1].toLowerCase()+' on '+fd(d2,true):'Everyone is already marked on '+fd(d2,true));}
+  else if(a==='fillSun'){var ds=monthDays(monthOf(S.date)).filter(function(d){return pd(d).getDay()===0;}),c=0;
+    ds.forEach(function(d){writeAttDay(d,function(x){activeWorkers().forEach(function(w){if(!x.marks[w.id]){x.marks[w.id]='WO';c++;}});});});render();toast(c?c+' Sunday marks set to weekly off':'Sundays are already marked');}
+});
+$('#view').addEventListener('change',function(e){
+  var t=e.target;if(t.getAttribute('data-act')!=='markX')return;
+  var id=t.getAttribute('data-id'),v=t.value;writeAtt(function(x){if(v)x.marks[id]=v;else if(['SL','L','WO','PH'].indexOf(x.marks[id])>=0)delete x.marks[id];});
+});
 
 /* ---------- picture catalogue of materials, tools and machines ---------- */
 var ICONS={
@@ -1695,6 +1796,217 @@ function workTotalsCard(){
     R.map(function(r){return '<tr><td style="white-space:normal">'+esc(ACTMAP[r.act].l)+'</td><td class="n">'+(r.mon?fq(r.mon)+' '+esc(r.unit):'–')+'</td><td class="n"><b>'+fq(r.all)+'</b> '+esc(r.unit)+'</td></tr>';}).join('')+'</tbody></table></div></section>';
 }
 
+/* ---------- subcontractor work measurement and bills ---------- */
+/* nominal bore (mm) to nominal diameter (inch), as used for inch-metre and inch-dia */
+var NBIN={15:0.5,20:0.75,25:1,32:1.25,40:1.5,50:2,65:2.5,80:3,100:4,125:5,150:6,200:8,250:10,300:12};
+var NBS_M=[15,20,25,32,40,50,65,80,100,125,150,200,250,300];
+/* billing bases: im inch-metre (dia × m), id inch-dia (dia × joints), m metre, nos, kg, sqm */
+var MB={im:{u:'inch-m',q:'Length (m)',sized:1},id:{u:'inch-dia',q:'No. of joints',sized:1},m:{u:'m',q:'Length (m)',sized:1},nos:{u:'Nos',q:'Quantity (Nos)'},kg:{u:'kg',q:'Weight (kg)'},sqm:{u:'sqm',q:'Area (sqm)'}};
+var MGRP=[['pipe','Pipework'],['fit','Fittings & valves'],['eq','Fire fighting equipment'],['fa','Fire alarm'],['oth','Other work']];
+var MDEF=[
+  ['pe_im','pipe','Pipe erection incl. welding / threading','im'],
+  ['pe_m','pipe','Pipe erection (per running metre)','m'],
+  ['wj','pipe','Welding joints','id'],
+  ['pt','pipe','Painting of pipes (primer + 2 coats)','im'],
+  ['wc','pipe','Wrapping and coating of buried pipe','m'],
+  ['sup','pipe','Fabrication and fixing of supports','kg'],
+  ['cc','pipe','Core cutting / wall sleeves','nos'],
+  ['fl','fit','Flange fixing (pair)','nos'],
+  ['el','fit','Elbow / bend','nos'],
+  ['tee','fit','Tee','nos'],
+  ['rd','fit','Reducer','nos'],
+  ['vl','fit','Valve installation (butterfly / gate / NRV)','nos'],
+  ['st','fit','Y-strainer','nos'],
+  ['pg','fit','Pressure gauge / pressure switch','nos'],
+  ['pu','eq','Pump installation (fire / jockey / booster)','nos'],
+  ['pp','eq','Pump control panel installation','nos'],
+  ['hlv','eq','Hydrant landing valve','nos'],
+  ['hrd','eq','Hose reel drum','nos'],
+  ['hb','eq','Hose box','nos'],
+  ['fbi','eq','Fire brigade inlet','nos'],
+  ['sp','eq','Sprinkler head','nos'],
+  ['icv','eq','Alarm valve / installation control valve','nos'],
+  ['fs','eq','Flow switch','nos'],
+  ['fad','fa','Detector (smoke / heat)','nos'],
+  ['mcp','fa','Manual call point / hooter','nos'],
+  ['fap','fa','Fire alarm panel installation','nos'],
+  ['fac','fa','Fire alarm cabling in conduit','m']
+];
+function defaultRates(){return MDEF.map(function(d){return {k:d[0],g:d[1],label:d[2],basis:d[3],rate:''};});}
+function subOf(id){return S.subs.filter(function(s){return s.id===id;})[0];}
+function rateOf(s,k){return ((s&&s.rates)||[]).filter(function(r){return r.k===k;})[0];}
+function measUnits(basis,size,qty){qty=n(qty);if(basis==='im'||basis==='id')return Math.round((NBIN[size]||0)*qty*100)/100;return qty;}
+function nbLabel(size){return size?size+' NB ('+fq(NBIN[size])+'")':'';}
+function vMeas(){
+  var k=S.measTab||'entry';
+  return '<div class="seg" role="group" aria-label="Measurement section">'+[['entry','Measurements'],['bill','Bill'],['subs','Subcontractors & rates']].map(function(o){return '<button type="button" data-act="mtab" data-v="'+o[0]+'" aria-pressed="'+(k===o[0])+'">'+o[1]+'</button>';}).join('')+'</div>'+
+    (k==='bill'?vBill():k==='subs'?vSubs():vEntry());
+}
+function activeSubs(){return S.subs.filter(function(s){return s.active!==false;}).sort(function(a,b){return (a.name||'').localeCompare(b.name||'');});}
+function vEntry(){
+  var subs=activeSubs(),sid=S.mSub&&subOf(S.mSub)?S.mSub:(subs[0]&&subs[0].id)||'',s=subOf(sid);
+  var rows=S.meas.filter(function(x){return x.date===S.date;}).sort(function(a,b){return (a.at||'')<(b.at||'')?-1:1;});
+  var tot=rows.reduce(function(t,x){return t+n(x.amt);},0);
+  var h='<section class="card"><div class="ch"><div><div class="eyebrow">Work measurement</div><h3>'+fd(S.date,true)+' '+pd(S.date).getFullYear()+'</h3></div><span class="chip flame">'+rs(tot)+'</span></div>';
+  if(!S.loaded.subs)h+='<div class="empty">Loading…</div>';
+  else if(!subs.length)h+='<div class="small muted">Add your subcontractors and their rates first.</div><button class="btn pri" type="button" data-act="addSub">Add subcontractor</button>';
+  else{
+    var items=(s&&s.rates)||[];
+    h+='<form id="msForm" style="display:flex;flex-direction:column;gap:10px">'+
+      '<label class="f"><span>Subcontractor</span><select id="ms-sub">'+opts(subs.map(function(x){return [x.id,x.name];}),sid)+'</select></label>'+
+      '<label class="f"><span>Work item</span><select id="ms-k" required><option value="">Choose</option>'+MGRP.map(function(g){var its=items.filter(function(r){return (r.g||'oth')===g[0];});return its.length?'<optgroup label="'+esc(g[1])+'">'+its.map(function(r){return '<option value="'+esc(r.k)+'"'+(r.k===S.mK?' selected':'')+'>'+esc(r.label)+' – '+(r.rate!==''&&r.rate!=null?'₹ '+fq(r.rate)+' / '+MB[r.basis].u:'no rate')+'</option>';}).join('')+'</optgroup>':'';}).join('')+'</select></label>'+
+      '<div class="g3"><label class="f" id="ms-szw"><span>Pipe size</span><select id="ms-sz">'+opts(NBS_M.map(function(z){return [z,nbLabel(z)];}),S.mSz||100)+'</select></label>'+
+      '<label class="f"><span id="ms-ql">Quantity</span><input id="ms-q" type="number" min="0" step="any" inputmode="decimal" required></label>'+
+      '<label class="f"><span id="ms-rl">Rate ₹</span><input id="ms-r" type="number" min="0" step="any" inputmode="decimal"></label></div>'+
+      '<label class="f"><span>Location / remarks</span><input id="ms-loc" placeholder="Basement, east riser"></label>'+
+      '<div id="ms-calc" class="alert"></div>'+
+      '<button class="btn pri" type="submit">Add measurement</button></form>';
+  }
+  h+='</section>';
+  h+='<section class="card flush"><div class="ch"><h2>Entries on this day ('+rows.length+')</h2></div>';
+  if(!rows.length)h+='<div class="empty">No measurements on '+fd(S.date,true)+'. Change the date at the top to see another day.</div>';
+  rows.forEach(function(x){var sb=subOf(x.sub);
+    h+='<div class="li"><div class="main"><div class="t">'+esc(x.label)+(x.size?' · '+x.size+' NB':'')+' <span class="num">'+rs(x.amt)+'</span></div><div class="d">'+esc([sb?sb.name:'',measText(x),x.loc].filter(Boolean).join(' · '))+'</div></div>'+
+      '<button type="button" class="x" data-act="delMeas" data-id="'+x.id+'" aria-label="Delete measurement">×</button></div>';
+  });
+  return h+'</section>';
+}
+function measText(x){var b=MB[x.basis]||MB.nos;
+  if(x.basis==='im')return fq(x.qty)+' m × '+fq(NBIN[x.size])+'" = '+fq(x.units)+' inch-m × ₹ '+fq(x.rate);
+  if(x.basis==='id')return fq(x.qty)+' joints × '+fq(NBIN[x.size])+'" = '+fq(x.units)+' inch-dia × ₹ '+fq(x.rate);
+  return fq(x.qty)+' '+b.u+' × ₹ '+fq(x.rate);}
+function bindMeasForm(){
+  var f=$('#msForm');if(!f||f.__b)return;f.__b=1;
+  function cur(){var s=subOf(val('ms-sub')),r=rateOf(s,val('ms-k'));return {s:s,r:r};}
+  function draw(fromItem){
+    var c=cur(),r=c.r,b=r?MB[r.basis]:null;
+    $('#ms-szw').style.display=b&&b.sized?'':'none';
+    $('#ms-ql').textContent=b?b.q:'Quantity';
+    $('#ms-rl').textContent='Rate ₹/'+(b?b.u:'unit');
+    if(fromItem&&r)$('#ms-r').value=r.rate!==''&&r.rate!=null?r.rate:'';
+    var out=$('#ms-calc');
+    if(!r){out.textContent='Choose the work item to see the calculation.';out.className='alert';return;}
+    var x={basis:r.basis,size:+val('ms-sz'),qty:n(val('ms-q')),rate:n(val('ms-r'))};x.units=measUnits(x.basis,x.size,x.qty);
+    out.innerHTML=x.qty?esc(measText(x))+' = <b>'+rs(x.units*x.rate)+'</b>':'Enter the '+esc(b.q.toLowerCase())+'.';
+    out.className='alert'+(x.qty?' good':'');
+  }
+  $('#ms-sub').onchange=function(){S.mSub=val('ms-sub');S.mK='';render();};
+  $('#ms-k').onchange=function(){S.mK=val('ms-k');draw(true);};
+  $('#ms-sz').onchange=function(){S.mSz=+val('ms-sz');draw();};
+  f.addEventListener('input',function(){draw();});
+  draw(true);
+  f.onsubmit=function(e){e.preventDefault();
+    var c=cur(),r=c.r;if(!c.s){toast('Choose the subcontractor.');return;}if(!r){toast('Choose the work item.');return;}
+    var q=n(val('ms-q'));if(q<=0){toast('Enter the quantity.');return;}
+    var x={date:S.date,sub:c.s.id,k:r.k,label:r.label,basis:r.basis,size:MB[r.basis].sized?+val('ms-sz'):'',qty:q,rate:n(val('ms-r')),loc:val('ms-loc')};
+    x.units=measUnits(x.basis,x.size,x.qty);x.amt=Math.round(x.units*x.rate*100)/100;
+    if(!x.rate)toast('Saved without a rate. Set the rate under Subcontractors & rates.');
+    put('meas',uid(),stamp(x)).then(function(){if(x.rate)toast('Added '+rs(x.amt));var q2=$('#ms-q');if(q2){q2.value='';q2.focus();}var l2=$('#ms-loc');if(l2)l2.value=x.loc;},function(){});
+  };
+}
+function billData(sid,from,to){
+  var rows=S.meas.filter(function(x){return x.sub===sid&&x.date>=from&&x.date<=to;}).sort(function(a,b){return a.date<b.date?-1:1;});
+  var g={},order=[];
+  rows.forEach(function(x){var key=x.k+'|'+(x.size||'')+'|'+x.rate;if(!g[key]){g[key]={label:x.label,size:x.size,basis:x.basis,rate:n(x.rate),qty:0,units:0,amt:0};order.push(key);}
+    var o=g[key];o.qty+=n(x.qty);o.units+=n(x.units);o.amt+=n(x.amt);});
+  var ab=order.map(function(k){return g[k];});
+  return {rows:rows,ab:ab,total:ab.reduce(function(t,o){return t+o.amt;},0)};
+}
+function vBill(){
+  var subs=activeSubs().concat(S.subs.filter(function(s){return s.active===false;}));
+  if(!subs.length)return '<section class="card"><div class="empty">Add a subcontractor first.</div></section>';
+  var m=monthOf(S.date),sid=S.bSub&&subOf(S.bSub)?S.bSub:subs[0].id,s=subOf(sid);
+  var from=S.bFrom||m+'-01',to=S.bTo||monthDays(m).slice(-1)[0],B=billData(sid,from,to);
+  var ret=S.bRet!=null?S.bRet:n(s.ret),paid=n(S.bPaid),retAmt=Math.round(B.total*ret/100),net=B.total-retAmt-paid;
+  var h='<section class="card"><div class="ch"><div><div class="eyebrow">Measurement bill</div><h3>'+esc(s.name)+'</h3></div><span class="chip flame">'+rs(B.total)+'</span></div>'+
+    '<label class="f"><span>Subcontractor</span><select id="bl-sub">'+opts(subs.map(function(x){return [x.id,x.name+(x.active===false?' (inactive)':'')];}),sid)+'</select></label>'+
+    '<div class="g2"><label class="f"><span>From</span><input id="bl-from" type="date" value="'+from+'"></label><label class="f"><span>To</span><input id="bl-to" type="date" value="'+to+'"></label></div>'+
+    '<div class="row">'+(S.dl?'<button class="btn sm" type="button" data-act="exportBill">Download bill (CSV)</button>':'')+'<button class="btn sm" type="button" data-act="billText">Copy bill summary</button></div></section>';
+  h+='<section class="card flush"><div class="ch"><h2>Abstract</h2><span class="small muted">'+B.rows.length+' entr'+(B.rows.length===1?'y':'ies')+'</span></div>';
+  if(!B.ab.length)h+='<div class="empty">No measurements for '+esc(s.name)+' from '+fd(from)+' to '+fd(to)+'.</div>';
+  else h+='<div class="tw" style="border:0;border-radius:0"><table class="tb"><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Measured</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>'+
+    B.ab.map(function(o){var b=MB[o.basis];return '<tr><td style="white-space:normal">'+esc(o.label)+(o.size?'<div class="small muted">'+nbLabel(o.size)+'</div>':'')+'</td><td class="n">'+fq(o.qty)+'<div class="small muted">'+(o.basis==='im'||o.basis==='m'?'m':o.basis==='id'?'joints':b.u)+'</div></td><td class="n">'+fq(o.units)+'<div class="small muted">'+b.u+'</div></td><td class="n">'+fq(o.rate)+'</td><td class="n">'+fq(o.amt)+'</td></tr>';}).join('')+
+    '<tr><td colspan="4"><b>Gross value of work</b></td><td class="n"><b>'+fq(B.total)+'</b></td></tr></tbody></table></div>';
+  h+='</section>';
+  h+='<section class="card"><div class="g2"><label class="f"><span>Retention (%)</span><input id="bl-ret" type="number" min="0" max="100" step="any" inputmode="decimal" value="'+esc(ret)+'"></label>'+
+    '<label class="f"><span>Less: paid / advance (₹)</span><input id="bl-paid" type="number" min="0" step="any" inputmode="decimal" value="'+esc(S.bPaid||'')+'"></label></div>'+
+    '<dl class="kv">'+kv('Gross value of work',rs(B.total))+kv('Less retention '+fq(ret)+'%',retAmt?'− '+rs(retAmt):'')+kv('Less paid / advance',paid?'− '+rs(paid):'')+'</dl>'+
+    '<div class="alert '+(net<0?'bad':'good')+'"><span><b>Net payable: '+rs(net)+'</b> <span class="small">(before TDS and GST, if any)</span></span></div></section>';
+  if(B.rows.length){
+    h+='<section class="card flush"><div class="ch"><h2>Measurement details</h2></div>';
+    B.rows.forEach(function(x){h+='<div class="li"><div class="main"><div class="t">'+fd(x.date)+' · '+esc(x.label)+(x.size?' · '+x.size+' NB':'')+'</div><div class="d">'+esc([measText(x),x.loc].filter(Boolean).join(' · '))+'</div></div><span class="r num small">'+rs(x.amt)+'</span></div>';});
+    h+='</section>';
+  }
+  return h;
+}
+function vSubs(){
+  var subs=S.subs.slice().sort(function(a,b){return (a.active===false)-(b.active===false)||(a.name||'').localeCompare(b.name||'');});
+  var h='<section class="card flush"><div class="ch"><h2>Subcontractors ('+subs.length+')</h2><button class="btn sm pri" type="button" data-act="addSub">Add subcontractor</button></div>';
+  if(!S.loaded.subs)h+='<div class="empty">Loading…</div>';
+  else if(!subs.length)h+='<div class="empty">Add each subcontractor with their agreed rates: pipe erection per inch-metre or metre, welding per inch-dia, painting, and fittings and equipment per item.</div>';
+  subs.forEach(function(s){var done=S.meas.filter(function(x){return x.sub===s.id;}),amt=done.reduce(function(t,x){return t+n(x.amt);},0),rated=(s.rates||[]).filter(function(r){return r.rate!==''&&r.rate!=null;}).length;
+    h+='<button type="button" class="li" data-act="editSub" data-id="'+s.id+'"><div class="main"><div class="t">'+esc(s.name)+(s.active===false?' <span class="chip">Inactive</span>':'')+'</div><div class="d">'+esc([s.scope,s.phone,rated+' rates set'].filter(Boolean).join(' · '))+'</div></div><span class="r num small">'+rs(amt)+'</span></button>';});
+  h+='</section><section class="card"><div class="small muted"><b>How it is measured.</b> Inch-metre = pipe diameter in inches × metres laid (100 NB = 4", so 10 m = 40 inch-m). Inch-dia = diameter in inches × number of joints (20 joints on 50 NB = 40 inch-dia). Per-metre, per-kg and per-item rates are quantity × rate.</div></section>';
+  return h;
+}
+function subSheet(s){
+  var isNew=!s;s=s||{name:'',phone:'',scope:'',ret:'',rates:defaultRates()};
+  var rates=JSON.parse(JSON.stringify(s.rates&&s.rates.length?s.rates:defaultRates()));
+  function rateRows(){return MGRP.map(function(g){var its=rates.map(function(r,i){r.i=i;return r;}).filter(function(r){return (r.g||'oth')===g[0];});
+    return its.length?'<div class="eyebrow" style="margin-top:6px">'+esc(g[1])+'</div>'+its.map(function(r){return '<div class="cl"><span style="flex:1 1 auto;min-width:0;font-size:14px">'+esc(r.label)+'<span class="small muted"> / '+MB[r.basis].u+'</span></span><input class="cq" type="number" min="0" step="any" inputmode="decimal" data-ri="'+r.i+'" value="'+esc(r.rate)+'" placeholder="₹" aria-label="Rate for '+esc(r.label)+'">'+(r.custom?'<button type="button" class="x" data-rdel="'+r.i+'" aria-label="Remove">×</button>':'')+'</div>';}).join(''):'';}).join('');}
+  sheet(isNew?'Add subcontractor':s.name,'<form id="sbf" class="sh-b" style="padding:0">'+
+    '<label class="f"><span>Name / firm</span><input id="sb-n" required value="'+esc(s.name)+'"></label>'+
+    '<div class="g2"><label class="f"><span>Phone</span><input id="sb-p" type="tel" value="'+esc(s.phone)+'"></label><label class="f"><span>Retention % on bills</span><input id="sb-r" type="number" min="0" max="100" step="any" value="'+esc(s.ret)+'"></label></div>'+
+    '<label class="f"><span>Scope of work</span><input id="sb-s" value="'+esc(s.scope)+'" placeholder="Hydrant and sprinkler piping, basement to terrace"></label>'+
+    '<div class="eyebrow">Agreed rates (₹). Leave blank for work not given to this subcontractor.</div><div id="sb-rates" class="cls">'+rateRows()+'</div>'+
+    '<details><summary class="small" style="cursor:pointer">Add another work item</summary><div class="g3" style="margin-top:8px"><label class="f"><span>Item</span><input id="sb-al" placeholder="Gland packing"></label><label class="f"><span>Measured per</span><select id="sb-ab">'+opts([['nos','Nos'],['m','Metre'],['im','Inch-metre'],['id','Inch-dia'],['kg','kg'],['sqm','sqm']],'nos')+'</select></label><label class="f"><span>Group</span><select id="sb-ag">'+opts(MGRP,'oth')+'</select></label></div><button class="btn sm" type="button" id="sb-add">Add item</button></details>'+
+    '<button class="btn pri" type="submit">'+(isNew?'Add subcontractor':'Save')+'</button>'+(isNew?'':'<button class="btn danger" type="button" id="sb-off">'+(s.active===false?'Make active again':'Mark inactive')+'</button>')+'</form>',function(b){
+    function grab(){$$('#sb-rates [data-ri]').forEach(function(el){rates[+el.getAttribute('data-ri')].rate=el.value===''?'':n(el.value);});}
+    function redraw(){grab();$('#sb-rates').innerHTML=rateRows();}
+    $('#sb-rates').addEventListener('click',function(e){var x=e.target.closest('[data-rdel]');if(!x)return;grab();rates.splice(+x.getAttribute('data-rdel'),1);$('#sb-rates').innerHTML=rateRows();});
+    $('#sb-add').onclick=function(){var l=val('sb-al');if(!l){toast('Type the item name.');return;}grab();rates.push({k:'c_'+uid(),g:val('sb-ag'),label:l,basis:val('sb-ab'),rate:'',custom:true});$('#sb-al').value='';redraw();};
+    var off=$('#sb-off');if(off)off.onclick=function(){col('subs').doc(s.id).update({active:s.active===false}).then(function(){closeSheet();toast('Updated');},fail);};
+    $('#sbf').onsubmit=function(e){e.preventDefault();grab();
+      var d={name:val('sb-n'),phone:val('sb-p'),scope:val('sb-s'),ret:val('sb-r')===''?'':n(val('sb-r')),rates:rates.map(function(r){var o={k:r.k,g:r.g,label:r.label,basis:r.basis,rate:r.rate};if(r.custom)o.custom=true;return o;}),active:isNew?true:s.active!==false};
+      if(!d.name){toast('Enter the name.');return;}
+      put('subs',isNew?uid():s.id,stamp(d)).then(function(){closeSheet();toast(isNew?'Subcontractor added':'Saved');},function(){});};
+  });
+}
+function exportBill(){
+  var subs=S.subs,m=monthOf(S.date),sid=S.bSub&&subOf(S.bSub)?S.bSub:(activeSubs()[0]||subs[0]).id,s=subOf(sid);
+  var from=S.bFrom||m+'-01',to=S.bTo||monthDays(m).slice(-1)[0],B=billData(sid,from,to),ret=S.bRet!=null?S.bRet:n(s.ret),paid=n(S.bPaid),retAmt=Math.round(B.total*ret/100);
+  var rows=[['Measurement bill',proj().name],['Subcontractor',s.name],['Period',from+' to '+to],[],['ABSTRACT'],['Item','Size (NB)','Qty','Measured qty','Unit','Rate (Rs)','Amount (Rs)']];
+  B.ab.forEach(function(o){rows.push([o.label,o.size||'',Math.round(o.qty*100)/100,Math.round(o.units*100)/100,MB[o.basis].u,o.rate,Math.round(o.amt*100)/100]);});
+  rows.push(['Gross value of work','','','','','',Math.round(B.total*100)/100],['Less retention '+ret+'%','','','','','',-retAmt],['Less paid / advance','','','','','',-paid],['Net payable (before TDS / GST)','','','','','',Math.round((B.total-retAmt-paid)*100)/100],[],['DETAILS'],['Date','Item','Size (NB)','Qty','Measured qty','Unit','Rate (Rs)','Amount (Rs)','Location / remarks']);
+  B.rows.forEach(function(x){rows.push([x.date,x.label,x.size||'',x.qty,x.units,MB[x.basis].u,x.rate,x.amt,x.loc||'']);});
+  dl('Bill '+safe(s.name)+' '+from+' to '+to+'.csv',csv(rows));
+}
+function billSummary(){
+  var m=monthOf(S.date),sid=S.bSub&&subOf(S.bSub)?S.bSub:(activeSubs()[0]||S.subs[0]).id,s=subOf(sid);
+  var from=S.bFrom||m+'-01',to=S.bTo||monthDays(m).slice(-1)[0],B=billData(sid,from,to),ret=S.bRet!=null?S.bRet:n(s.ret),paid=n(S.bPaid),retAmt=Math.round(B.total*ret/100);
+  return ['*Measurement bill – '+proj().name+'*','Subcontractor: '+s.name,'Period: '+fd(from)+' to '+fd(to),'']
+    .concat(B.ab.map(function(o){return '- '+o.label+(o.size?' '+o.size+' NB':'')+': '+fq(o.units)+' '+MB[o.basis].u+' × ₹'+fq(o.rate)+' = ₹'+fq(o.amt);}))
+    .concat(['','Gross: '+rs(B.total)].concat(retAmt?['Retention '+ret+'%: − '+rs(retAmt)]:[]).concat(paid?['Paid / advance: − '+rs(paid)]:[]).concat(['*Net payable: '+rs(B.total-retAmt-paid)+'*'])).join('\n');
+}
+$('#view').addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]');if(!b)return;var a=b.getAttribute('data-act');
+  if(a==='mtab'){S.measTab=b.getAttribute('data-v');render();window.scrollTo(0,0);}
+  else if(a==='addSub')subSheet(null);
+  else if(a==='editSub')subSheet(subOf(b.getAttribute('data-id')));
+  else if(a==='delMeas'){var id=b.getAttribute('data-id');confirmBtn(b,'Delete?',function(){col('meas').doc(id).delete().then(function(){toast('Deleted');},fail);});}
+  else if(a==='exportBill')exportBill();
+  else if(a==='billText'){var t=billSummary();if(window.AndroidBridge&&window.AndroidBridge.shareText){window.AndroidBridge.shareText(t);return;}
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){toast('Copied. Paste it into WhatsApp or email.');},function(){copyFallback(t);});else copyFallback(t);}
+});
+$('#view').addEventListener('change',function(e){
+  var id=e.target.id;
+  if(id==='bl-sub'){S.bSub=e.target.value;S.bRet=null;render();}
+  else if(id==='bl-from'){S.bFrom=e.target.value;render();}
+  else if(id==='bl-to'){S.bTo=e.target.value;render();}
+  else if(id==='bl-ret'){S.bRet=n(e.target.value);render();}
+  else if(id==='bl-paid'){S.bPaid=e.target.value;render();}
+});
+
 /* ---------- downloads ---------- */
 function csv(rows){return '﻿'+rows.map(function(r){return r.map(function(v){v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(',');}).join('\r\n');}
 function safe(s){return String(s||'').replace(/[\\/:*?"<>|]+/g,' ').trim();}
@@ -1703,16 +2015,17 @@ function dl(name,text){
   S.dl.save({filename:name,data:text}).then(function(r){toast('Saved '+name+(typeof r==='string'&&r?' in '+r:''));},function(e){toast(e&&e.code==='declined'?'Download cancelled':'The file could not be saved here.');});
 }
 function exportAtt(){
-  var m=S.date.slice(0,7),y=+m.slice(0,4),mo=+m.slice(5,7),last=new Date(y,mo,0).getDate(),days=[];
-  for(var i=1;i<=last;i++)days.push(m+'-'+pad(i));
+  var m=S.date.slice(0,7),days=monthDays(m),C=payCfg();
   var ws=S.workers.slice().sort(function(a,b){return (a.name||'').localeCompare(b.name||'');});
-  var rows=[['Name','Trade','Contractor'].concat(days.map(function(d){return d.slice(8);})).concat(['Days','OT hours'])];
+  var rows=[['Name','Trade','Contractor'].concat(days.map(function(d){return d.slice(8);})).concat(['Present','Half days','Absent','Sick leave','Leave','Weekly off','Holiday','Paid days','OT hours'])];
   ws.forEach(function(w){
-    var t=0,ot=0,any=false,r=[w.name,w.trade||'',w.contractor||''];
-    days.forEach(function(d){var a=S.att[d],v=a&&a.marks?a.marks[w.id]||'':'';if(v)any=true;if(v==='P')t+=1;if(v==='H')t+=0.5;if(a&&a.ot&&a.ot[w.id])ot+=n(a.ot[w.id]);r.push(v);});
-    if(any||w.active!==false)rows.push(r.concat([t,ot]));
+    var any=false,r=[w.name,w.trade||'',w.contractor||''];
+    days.forEach(function(d){var a=S.att[d],v=a&&a.marks?a.marks[w.id]||'':'';if(v)any=true;r.push(v?attShort(v):'');});
+    var t=tally(w.id,days);
+    if(any||w.active!==false)rows.push(r.concat([t.P,t.H,t.A,t.SL,t.L,t.WO,t.PH,paidDays(t,C),t.ot]));
   });
-  dl('Attendance '+safe(proj().name)+' '+MON[mo-1]+' '+y+'.csv',csv(rows));
+  rows.push([]);rows.push(['Codes: P present, HD half day, A absent, SL sick leave, L leave, WO weekly off, PH holiday']);
+  dl('Attendance '+safe(proj().name)+' '+MON[+m.slice(5,7)-1]+' '+m.slice(0,4)+'.csv',csv(rows));
 }
 function exportStock(){
   var rows=[['Material','Type','Unit','In stock','Minimum','Received','Issued','BOQ qty']];
